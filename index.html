@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IT Quiz Bee Portal</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><meta name="theme-color" content="#0b1f4a">
+<style>
+:root{--navy:#0b1f4a;--navy2:#13306b;--gold:#f5b301;--maroon:#8b0000;--bg:#f3f5fa;--card:#fff;--ink:#16203a;--mute:#5b6682;--line:#dde2ee;--ok:#12803c;--okbg:#e6f6ec;--bad:#b3261e;--badbg:#fdeceb;--warn:#b26a00}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:15px}
+.qlayout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:14px;align-items:start}
+.qlayout aside{position:sticky;top:70px}
+.qlayout .pal{grid-template-columns:repeat(5,1fr)}
+@media (max-width:820px){.qlayout{grid-template-columns:1fr}.qlayout aside{position:static}.qlayout .pal{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}}
+header.top{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:13px 16px;border-bottom:3px solid var(--gold)}
+header.top .in{max-width:980px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header.top h1{margin:0;font-size:1.2rem}
+header.top small{font-size:.78rem}
+header.top h1 span{color:var(--gold)}
+header.top small{opacity:.8;display:block;font-weight:400}
+main{max-width:1000px;margin:16px auto;padding:0 14px 48px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(10,20,50,.05)}
+h2{margin:0 0 10px;font-size:1rem;color:var(--navy)}
+.grid{display:grid;gap:8px}
+.scopes{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.opt{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;background:#fff;user-select:none}
+.opt:hover{border-color:var(--navy2)}
+.opt.on{border-color:var(--navy2);background:#eef2fc}
+.opt input{accent-color:var(--navy2);width:17px;height:17px;flex:none}
+.opt .n{margin-left:auto;font-size:.75rem;color:var(--mute);white-space:nowrap}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.seg{display:grid;gap:8px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1.5px solid var(--navy2);background:#fff;color:var(--navy2);padding:9px 16px;font-weight:600}
+button:hover{background:#eef2fc}
+button.pri{background:var(--navy2);color:#fff}
+button.pri:hover{background:var(--navy)}
+button.gold{background:var(--gold);border-color:var(--gold);color:#241a00}
+button.gold:hover{background:#e2a500}
+button:disabled{opacity:.5;cursor:not-allowed}
+.big{padding:13px 26px;font-size:1.05rem}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.links button{padding:5px 11px;font-size:.82rem}
+.muted{color:var(--mute);font-size:.88rem}
+.note{background:#fff7e0;border:1px solid #f0d98a;color:#6b4e00;border-radius:10px;padding:9px 12px;font-size:.88rem;margin-bottom:12px}
+/* quiz */
+.qbar{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;border-radius:0 0 12px 12px;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:-18px -14px 14px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.15rem}
+.timer.low{color:#ff8a80}
+.qbar button{padding:6px 14px}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:.74rem;padding:2px 9px;border-radius:99px;background:#eef2fc;color:var(--navy2);font-weight:600}
+.tag.E{background:#e6f6ec;color:var(--ok)}.tag.A{background:#fff3d6;color:var(--warn)}.tag.D{background:#fdeceb;color:var(--bad)}
+.qtext{font-size:1.12rem;font-weight:600;margin:4px 0 14px}
+.choice{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:8px;cursor:pointer}
+.choice:hover{border-color:var(--navy2)}
+.choice.sel{border-color:var(--navy2);background:#eef2fc}
+.choice b{background:var(--navy2);color:#fff;border-radius:6px;min-width:26px;text-align:center;padding:0 4px;flex:none}
+input.ans{width:100%;font:inherit;font-size:1.1rem;padding:12px 14px;border:1.5px solid var(--navy2);border-radius:10px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.pal button{padding:6px 0;font-size:.85rem;border-width:1px}
+.pal .done{background:#dbe6ff}.pal .flag{outline:2px solid var(--gold)}.pal .cur{background:var(--navy2);color:#fff}
+/* results */
+.score{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.ring{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;font-size:2rem;font-weight:800;color:var(--navy)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;flex:1;min-width:260px}
+.stat{border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line)}
+.stat b{display:block;font-size:1.6rem}
+.stat.g{background:var(--okbg);color:var(--ok)}.stat.r{background:var(--badbg);color:var(--bad)}.stat.y{background:#fff3d6;color:var(--warn)}.stat.b{background:#eef2fc;color:var(--navy2)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:600}
+.bar{height:8px;background:#e8ecf6;border-radius:5px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--ok)}
+.rev{border:1px solid var(--line);border-left:6px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;break-inside:avoid}
+.rev.ok{border-left-color:var(--ok)}.rev.no{border-left-color:var(--bad)}.rev.na{border-left-color:var(--warn)}
+.rev .q{font-weight:600;margin:6px 0}
+.line{font-size:.92rem;margin:3px 0}
+.good{color:var(--ok);font-weight:600}.badc{color:var(--bad);font-weight:600}
+.exp{background:#f5f7fc;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:.9rem}
+.ch{font-size:.9rem;padding:2px 8px;border-radius:6px;display:inline-block;margin:2px 6px 2px 0;border:1px solid var(--line)}
+.ch.c{background:var(--okbg);border-color:var(--ok)}.ch.w{background:var(--badbg);border-color:var(--bad)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters button.act{background:var(--navy2);color:#fff}
+.printhead{display:none}
+details summary{cursor:pointer;font-weight:600;color:var(--navy2)}
+textarea{width:100%;min-height:90px;font:12px monospace}
+@media (max-width:600px){.qtext{font-size:1.08rem}.ring{width:100px;height:100px;font-size:1.5rem}}
+@media print{
+  body{background:#fff}header.top,.noprint,.filters,.qbar{display:none!important}
+  main{max-width:none;margin:0;padding:0}.card{box-shadow:none;border:none;padding:0}
+  .printhead{display:block;border-bottom:2px solid var(--navy);margin-bottom:10px;padding-bottom:6px}
+  .rev{page-break-inside:avoid}.ring{background:none!important;border:3px solid var(--navy)}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+[data-theme=dark]{--bg:#0a1020;--card:#141b30;--ink:#e6ebf8;--mute:#9aa7c7;--line:#27304f;--okbg:#0f2a1b;--badbg:#321514;--navy2:#5b86e5;--ok:#4cc27a;--bad:#ff8a80;--warn:#f0b24a}
+[data-theme=dark] .opt,[data-theme=dark] button,[data-theme=dark] .choice,[data-theme=dark] .rev,[data-theme=dark] input.ans,[data-theme=dark] textarea{background:var(--card);color:var(--ink)}
+[data-theme=dark] button.pri,[data-theme=dark] .filters button.act,[data-theme=dark] .pal .cur{background:var(--navy2);color:#fff}[data-theme=dark] button.gold{background:var(--gold);color:#241a00}
+[data-theme=dark] .opt.on,[data-theme=dark] .choice.sel,[data-theme=dark] .tag,[data-theme=dark] .exp,[data-theme=dark] .pal .done{background:#1c2a52}
+[data-theme=dark] h2,[data-theme=dark] details summary{color:#9db8ff}[data-theme=dark] .ring>div{background:var(--card)!important}
+[data-theme=dark] .note{background:#2b2410;border-color:#5b4a14;color:#f0d98a}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.mode{border:1.5px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:transform .15s,border-color .15s}
+.mode:hover{border-color:var(--gold);transform:translateY(-2px)}.mode b{font-size:1.1rem;color:var(--navy2)}.mode span{font-size:.88rem;color:var(--mute)}
+@media print{.modes{display:none}}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.sc{position:relative;display:flex;flex-direction:column;gap:4px;border:2px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:var(--card);overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
+.sc::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:var(--c);opacity:.35}
+.sc:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(10,20,50,.1)}.sc:focus-within{outline:3px solid var(--gold)}
+.sc.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 9%,var(--card))}.sc.on::before{opacity:1}
+.sc input{position:absolute;opacity:0;pointer-events:none}
+.sc .ck{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:#fff;font-weight:800}
+.sc.on .ck{background:var(--c);border-color:var(--c)}.sc.on .ck::after{content:"\2713"}
+.sc .ic{font-size:1.7rem;line-height:1}.sc .no{font-size:.7rem;font-weight:800;letter-spacing:.06em;color:var(--c);margin-top:4px}
+.sc .nm{font-weight:700;font-size:.93rem;line-height:1.25;min-height:2.3em}
+.sc .meta{display:flex;justify-content:space-between;font-size:.76rem;color:var(--mute);margin-top:2px}
+.sc .mb{height:5px;background:var(--line);border-radius:3px;overflow:hidden}.sc .mb i{display:block;height:100%;background:var(--c)}
+.pal{gap:7px}.pal button{aspect-ratio:1;padding:0;border-width:1.5px;border-radius:10px;font-weight:700;font-size:.85rem;position:relative;background:var(--card);color:var(--mute);border-color:var(--line)}
+.pal button:hover{border-color:var(--navy2);color:var(--navy2)}
+.pal .done,[data-theme=dark] .pal .done{background:var(--navy2);border-color:var(--navy2);color:#fff}
+.pal .flag{outline:none}.pal .flag::after{content:"";position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:var(--gold);border:2px solid var(--card)}
+.pal .cur,[data-theme=dark] .pal .cur{background:var(--navy);border-color:var(--navy);color:#fff;outline:3px solid var(--gold);outline-offset:1px}
+.pal.locked button{pointer-events:none}
+.mpb{height:8px;background:var(--line);border-radius:5px;overflow:hidden}.mpb i{display:block;height:100%;background:linear-gradient(90deg,var(--navy2),var(--ok))}
+.mpt{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);margin:6px 0 12px}
+.lg{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:14px;font-size:.74rem;color:var(--mute)}.lg span{display:flex;align-items:center;gap:5px}
+.sw{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--line);display:inline-block;position:relative}.sw.dn{background:var(--navy2);border-color:var(--navy2)}
+.sw.cur{background:var(--navy);outline:2px solid var(--gold);outline-offset:0}.sw.fl::after{content:"";position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.ft{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#cfd8f3;border-top:3px solid var(--gold);padding:20px 16px;margin-top:20px;font-size:.85rem}
+.ft .in{max-width:980px;margin:auto;display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}.ft b{color:#fff}
+.ft a{color:#fff;margin-left:14px;text-decoration:underline}.ft .cp{width:100%;opacity:.75;font-size:.78rem;border-top:1px solid rgba(255,255,255,.2);padding-top:10px}
+.sc.static{cursor:default}.sc.static:hover{transform:none;box-shadow:none}.big2{font-size:1.8rem;font-weight:800;line-height:1.1}.pgs .sc{gap:2px}
+.rc .nm{min-height:0}.rc .meta{justify-content:flex-start}
+.startc{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border:none;padding:22px 16px}
+.startc .sum{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.startc .chip{background:rgba(255,255,255,.15);border-radius:99px;padding:4px 12px;font-size:.82rem;font-weight:600}
+.startc .go{padding:14px 44px;font-size:1.1rem;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.25)}.startc .wk{font-size:.85rem;opacity:.9}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <h1 onclick="goHome()" onkeydown="if(event.key==='Enter')goHome()" tabindex="0" role="link" title="Back to home" style="cursor:pointer">IT Skills Olympics <span>Quiz Bee Portal</span><small>Reviewer & practice tests for the IT Quiz Bee</small></h1>
+  
+</div></header>
+<main id="app"></main>
+<footer class="ft noprint"><div class="in"><div><b>IT Skills Olympics · Quiz Bee Portal</b><br>Practice reviewer for the IT Quiz Bee. Works offline. Your progress is saved only on this device.</div>
+<div><a href="#" onclick="goHome();return false">Home</a><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false">Back to top</a></div>
+<div class="cp">© 2026 · Unofficial practice tool for self-review.</div></div></footer>
+
+<script>
+/* ===================== QUESTION BANK =====================
+Row format: [difficulty(E|A|D), question, answer, aliases(";"-separated), distractors(";"-separated, 3), explanation]
+Expanded at runtime into the JSON schema shown in question-bank.sample.json. */
+const SCOPES=[
+{id:1,name:"Basic Computer Concepts & General IT"},{id:2,name:"Logic Formulation"},{id:3,name:"Operating Systems"},
+{id:4,name:"Software Engineering"},{id:5,name:"Object-Oriented Programming"},{id:6,name:"Computer Networks & Telecom"},
+{id:7,name:"Computer Architecture & IT Security"},{id:8,name:"Database Management Systems"},
+{id:9,name:"Data Science & Analytics"},{id:10,name:"E-commerce & Web Design"}];
+const RAW={
+1:[
+["E","The 'brain' of the computer that executes instructions","CPU","Central Processing Unit;Processor","RAM;Motherboard;GPU","The CPU fetches, decodes and executes instructions."],
+["E","The smallest unit of data, with a value of 1 or 0","Bit","Binary digit","Byte;Nibble;Word","A bit is a single binary digit."],
+["E","How many bits are in one byte?","8","eight","4;16;10","1 byte = 8 bits; a nibble = 4 bits."],
+["E","Raw facts and figures, before processing, are called?","Data","","Information;Knowledge;Software","Data is raw; information is processed, meaningful data."],
+["E","The main circuit board that connects the CPU, RAM, storage and expansion cards","Motherboard","Mainboard","Chipset;Power supply;Backplane","Everything in the computer plugs into the motherboard."],
+["E","A keyboard, mouse or scanner is what type of device?","Input device","Input","Output device;Storage device;Peripheral bus","Input devices send data IN to the computer."],
+["E","A monitor, printer or plotter is what type of device?","Output device","Output","Input device;Storage device;Network device","Output devices send data OUT."],
+["E","In binary computing, 1 kilobyte equals how many bytes?","1024","1,024","1000;2048;1204","Binary uses powers of 2: 2^10 = 1,024."],
+["E","Software permanently stored in hardware, such as BIOS/UEFI, is called?","Firmware","","Middleware;Freeware;Shareware","Firmware lives inside hardware devices."],
+["E","The base-16 number system (digits 0-9 and A-F) is called?","Hexadecimal","Hex","Octal;Binary;Decimal","Hexadecimal uses 16 symbols."],
+["A","Which computer generation used vacuum tubes?","First generation","1st generation;first;1st","Second generation;Third generation;Fourth generation","1st = vacuum tubes, 2nd = transistors, 3rd = ICs, 4th = microprocessors."],
+["A","The third generation of computers was built on which component?","Integrated circuits","IC;ICs;Integrated circuit","Transistors;Vacuum tubes;Microprocessors","ICs were invented by Jack Kilby and Robert Noyce (1958-59)."],
+["A","Who is considered the first programmer for writing an algorithm for the Analytical Engine?","Ada Lovelace","Lovelace;Ada","Charles Babbage;Alan Turing;Grace Hopper","Lovelace wrote the first algorithm for Babbage's machine."],
+["A","Who is called the 'Father of the Computer' for designing the Analytical Engine?","Charles Babbage","Babbage","Alan Turing;John von Neumann;Herman Hollerith","Babbage designed the Difference and Analytical Engines."],
+["A","Who invented the World Wide Web?","Tim Berners-Lee","Berners-Lee;Tim Berners Lee","Vint Cerf;Linus Torvalds;Marc Andreessen","Berners-Lee invented the Web in 1989-91."],
+["A","What is the decimal number 255 in hexadecimal?","FF","","FE;EE;100","255 = 15x16 + 15, and 15 is F."],
+["A","What is the binary number 1011 in decimal?","11","","9;13;10","8 + 2 + 1 = 11."],
+["A","Which law states that the number of transistors on a chip doubles about every two years?","Moore's Law","Moores law;Moore's;Moore law","Amdahl's Law;Brooks's Law;Metcalfe's Law","Gordon Moore's observation about transistor density."],
+["A","Which language translator converts the WHOLE program before it runs?","Compiler","","Interpreter;Assembler;Linker","An interpreter translates line by line."],
+["A","The ancient Greek hand-powered analog device for astronomical calculation is the?","Antikythera mechanism","Antikythera","Abacus;Pascaline;Astrolabe","An ancient analog astronomical calculator."],
+["A","Which was the first commercial computer (1951)?","UNIVAC","UNIVAC I","ENIAC;EDVAC;Z3","UNIVAC was the first commercial computer."],
+["D","Who invented the computer mouse in 1964?","Douglas Engelbart","Engelbart;Doug Engelbart","Steve Jobs;Alan Kay;Ivan Sutherland","Engelbart demonstrated the mouse in 1964."],
+["D","Which technique lets a device transfer data to or from memory without going through the CPU?","DMA","Direct Memory Access","IPC;MMU;TLB","Direct Memory Access frees the CPU during transfers."],
+["D","Who created the Linux kernel in 1991?","Linus Torvalds","Torvalds;Linus","Richard Stallman;Dennis Ritchie;Ken Thompson","Torvalds also created Git in 2005."],
+["D","Who founded TSMC, the world's largest chip foundry?","Morris Chang","Chang","Jensen Huang;Lisa Su;Pat Gelsinger","Morris Chang founded TSMC."],
+["D","Letter-to-number substitution writing such as '3l1t3' is called?","Leetspeak","Leet;1337;L33t","Pig Latin;Morse code;Base64","Leetspeak (1337) swaps letters for look-alike numbers."],
+["D","Which company's slogan was 'The network is the computer'?","Sun Microsystems","Sun","Cisco;IBM;Oracle","Sun Microsystems' slogan."],
+["D","A device made unusable by failed firmware or software is said to be?","Bricked","Brick","Zombied;Orphaned;Ghosted","It is as useful as a brick."],
+["D","Who sent the first SMS in 1992 ('Merry Christmas')?","Neil Papworth","Papworth","Martin Cooper;Jack Dorsey;Linus Torvalds","Papworth sent the first text message."],
+["D","Which Alphabet company runs robotaxis and grew out of Google's 2009 self-driving project?","Waymo","","Cruise;Zoox;Tesla Autopilot","Waymo is Alphabet's self-driving company."],
+["D","Who is the 'father of supercomputing', known for the Cray-1 (1976)?","Seymour Cray","Cray","Gene Amdahl;John Backus;Gordon Moore","Seymour Cray designed the Cray-1."],
+["D","Which first stored-program computer design was by John von Neumann and others?","EDVAC","","ENIAC;UNIVAC;Colossus","EDVAC introduced the stored-program concept."]
+],
+2:[
+["E","Which logic gate outputs TRUE only when BOTH inputs are TRUE?","AND","","OR;XOR;NAND","AND needs both inputs true."],
+["E","Which gate inverts its single input?","NOT","Inverter","AND;NOR;XOR","NOT flips 1 to 0 and 0 to 1."],
+["E","What is the result of 1 XOR 1?","0","","1;2;Undefined","XOR gives 1 only when the inputs differ."],
+["E","Which flowchart symbol represents a decision?","Diamond","","Oval;Rectangle;Parallelogram","Diamond = decision, rectangle = process, oval = start/end."],
+["E","Which flowchart symbol represents input/output?","Parallelogram","","Diamond;Rectangle;Oval","Parallelogram = input/output."],
+["E","A stack follows which order?","LIFO","Last In First Out","FIFO;Random;Priority","Last in, first out (push/pop)."],
+["E","A queue follows which order?","FIFO","First In First Out","LIFO;Random;Priority","First in, first out (enqueue/dequeue)."],
+["E","Which operator returns the remainder of a division (10 % 3 = 1)?","Modulo","%;Mod;Modulus","Division;Increment;Exponent","% gives the remainder."],
+["E","Which loop always runs its body at least once?","do-while","do while;dowhile;posttest","for;while;foreach","The condition is tested at the end."],
+["E","What is the next number: 2, 4, 8, 16, ___ ?","32","","24;30;20","Each term is doubled (geometric sequence)."],
+["A","What is the result of A AND (NOT A)?","0","False","1;A;NOT A","A variable AND its complement is always false."],
+["A","Which gate outputs TRUE when its inputs are DIFFERENT?","XOR","Exclusive OR","XNOR;NAND;NOR","XOR = different inputs give 1."],
+["A","Which gate outputs TRUE when its inputs are EQUAL?","XNOR","","XOR;NAND;OR","XNOR is the inverse of XOR."],
+["A","NAND and which other gate are the two universal gates?","NOR","","XOR;XNOR;OR","NAND and NOR can build any other gate."],
+["A","NOT(A AND B) = (NOT A) OR (NOT B) is known as which law?","De Morgan's law","De Morgan;DeMorgan's law;De Morgan's laws","Absorption law;Distributive law;Idempotent law","De Morgan's laws negate AND/OR."],
+["A","A OR (A AND B) = A is which Boolean law?","Absorption law","Absorption","Identity law;Idempotent law;Complement law","Absorption law."],
+["A","A statement that is always true is called a?","Tautology","","Contradiction;Contingency;Fallacy","Always false = contradiction; sometimes = contingency."],
+["A","A statement that is always false is called a?","Contradiction","","Tautology;Contingency;Axiom","Always false."],
+["A","How many rows does a truth table with 3 inputs have?","8","","6;9;3","2^n rows: 2^3 = 8."],
+["A","Which is logically equivalent to the original 'if p then q': converse, inverse or contrapositive?","Contrapositive","","Converse;Inverse;Biconditional","Contrapositive (if not q then not p) is equivalent."],
+["A","Next number: 1, 1, 2, 3, 5, 8, ___ ?","13","","11;12;14","Fibonacci: each term is the sum of the previous two."],
+["A","Next number: 2, 6, 12, 20, 30, ___ ?","42","","40;36;44","Differences 4, 6, 8, 10, next 12 gives 42."],
+["A","A loop placed inside another loop is called a?","Nested loop","Nested","Infinite loop;Recursive loop;Do-while loop","The inner loop completes for each outer pass."],
+["A","The stopping condition of a recursive function is the?","Base case","","Recursive case;Stack frame;Loop invariant","Without it, recursion overflows the stack."],
+["D","What is the Big-O time of binary search?","O(log n)","log n;O(logn);logn","O(n);O(n log n);O(1)","Binary search halves the data each step."],
+["D","Binary search requires the data to be?","Sorted","Sorted data;Sorted list;Sorted array","Unique;Even-sized;Linked","Binary search only works on sorted data."],
+["D","A practical rule-of-thumb method that is not guaranteed to be optimal is a?","Heuristic","","Algorithm;Theorem;Paradox","Heuristics trade optimality for speed."],
+["D","A variable that adds running totals (sum = sum + x) is an?","Accumulator","","Counter;Flag;Constant","A counter adds a fixed step."],
+["D","An argument that is valid AND has true premises is called?","Sound","Sound argument","Valid;Invalid;Fallacious","Sound = valid + true premises."],
+["D","In which selection of items does ORDER matter: permutation or combination?","Permutation","Permutations","Combination;Factorial;Sequence","nPr is order-sensitive; nCr is not."],
+["D","sum=0; for i=1; i<=10; i=i+3: sum=sum+i. What is the final sum?","22","","18;55;15","i = 1, 4, 7, 10 gives 22."],
+["D","x=5, y=3; x=x+y; y=x-y; x=x-y. What is the final value of x?","3","","5;8;2","This swaps x and y without a temp variable."],
+["D","Among NOT, AND and OR, which has the highest precedence?","NOT","","AND;OR;All equal","NOT first, then AND, then OR."]
+],
+3:[
+["E","The master program that manages hardware and software resources is the?","Operating system","OS","Compiler;BIOS;Firmware","The OS manages processes, memory, files and devices."],
+["E","The core of the operating system is the?","Kernel","","Shell;Driver;Bootloader","The shell is the user interface to the kernel."],
+["E","A program in execution is called a?","Process","","Thread;Program;Daemon","A program is passive; a process is active."],
+["E","Which scheduling algorithm gives each process a fixed time quantum?","Round Robin","RR","FCFS;SJF;Priority scheduling","Round Robin is preemptive and fair."],
+["E","Which Linux command lists files and directories?","ls","","cd;pwd;mkdir","ls = list."],
+["E","Which Linux command changes the current directory?","cd","","ls;pwd;rmdir","cd = change directory."],
+["E","Which Linux command prints the working directory?","pwd","","ls;cd;man","pwd = print working directory."],
+["E","A process waiting for an I/O event is in which state?","Waiting","Blocked;Waiting/Blocked","Ready;Running;Terminated","It cannot run until the event completes."],
+["E","Who created the Linux kernel?","Linus Torvalds","Torvalds","Dennis Ritchie;Richard Stallman;Bill Joy","Created in 1991."],
+["A","Deadlock needs mutual exclusion, hold and wait, circular wait and ___ ?","No preemption","No pre-emption;Non-preemption","Preemption;Starvation;Aging","Break any one condition and deadlock cannot happen."],
+["A","The technique that gradually raises a waiting process's priority is?","Aging","","Swapping;Paging;Spooling","Aging prevents starvation."],
+["A","Which scheduling algorithm suffers from the convoy effect?","FCFS","First Come First Served;First-Come First-Served","SJF;Round Robin;Priority","Short jobs get stuck behind a long one."],
+["A","Spending more time paging than executing is called?","Thrashing","","Fragmentation;Deadlock;Swapping","The system crawls."],
+["A","A needed page that is not in RAM causes a?","Page fault","","Segment fault;Deadlock;Context switch","The page is fetched from disk."],
+["A","A finished process that stays in the process table until its parent reads its exit status is a?","Zombie process","Zombie","Orphan process;Daemon;Child process","An orphan's parent terminated first."],
+["A","The structure holding a process's ID, state, program counter and registers is the?","PCB","Process Control Block","TLB;MMU;PTE","Process Control Block."],
+["A","Which data structure maps pages to frames?","Page table","","TLB;Segment table;Inode","Each process has a page table."],
+["A","Keeping several jobs in memory so the CPU stays busy during I/O is called?","Multiprogramming","","Multitasking;Multiprocessing;Multithreading","Multiprogramming switches jobs when one waits."],
+["A","Executing on more than one CPU/core at the same time is called?","Multiprocessing","","Multiprogramming;Multitasking;Multiuser","Multiprocessing = multiple CPUs."],
+["A","Software that creates and runs virtual machines is a?","Hypervisor","VMM;Virtual machine monitor","Kernel;Container;Emulator","Type 1 is bare-metal; Type 2 runs on an OS."],
+["D","The Banker's algorithm is used for?","Deadlock avoidance","Avoidance","Deadlock prevention;CPU scheduling;Page replacement","It checks for a safe state."],
+["D","Which page replacement replaces the page not used for the longest time?","LRU","Least Recently Used","FIFO;Optimal;MRU","Least Recently Used."],
+["D","Which anomaly can FIFO page replacement show?","Belady's anomaly","Beladys anomaly;Belady anomaly;Belady's","Convoy effect;Thrashing;Starvation","More frames can cause more faults."],
+["D","Waiting time = turnaround time minus?","Burst time","","Arrival time;Completion time;Quantum","Turnaround = completion - arrival."],
+["D","Which file system is commonly used by Linux?","ext4","","NTFS;APFS;FAT32","NTFS is Windows; APFS is macOS."],
+["D","Which file system is native to modern Windows?","NTFS","","ext4;APFS;HFS+","New Technology File System."],
+["D","The interface through which a program asks the kernel for a service is a?","System call","Syscall","Interrupt;Signal;Pipe","User mode requests kernel services via system calls."],
+["D","Queueing jobs for a slow device such as a printer is called?","Spooling","","Buffering;Caching;Paging","Spooling = Simultaneous Peripheral Operations On-Line."],
+["D","The cache for page-table entries is the?","TLB","Translation Lookaside Buffer","MMU;PCB;ALU","TLB speeds up address translation."],
+["D","Unused space inside an allocated memory block is called?","Internal fragmentation","","External fragmentation;Thrashing;Compaction","External = scattered free pieces."],
+["D","Which technique fixes external fragmentation?","Compaction","","Paging fault;Swapping out;Spooling","Compaction merges free pieces together."],
+["D","Which Linux command changes file permissions?","chmod","","chown;chgrp;sudo","chown changes the owner."]
+],
+4:[
+["E","SDLC stands for?","Software Development Life Cycle","Software Development Lifecycle;Systems Development Life Cycle","Software Design Logic Cycle;System Deployment Life Cycle;Software Data Life Cycle","The phases of building software."],
+["E","Which model is linear and sequential, with each phase finishing before the next starts?","Waterfall","Waterfall model","V-model;Spiral;Agile","Changes are costly in Waterfall."],
+["E","In Scrum, the fixed work period (typically 1-4 weeks) is called a?","Sprint","","Epic;Backlog;Release","Sprints are time-boxed."],
+["E","Which Scrum role owns and orders the product backlog?","Product Owner","","Scrum Master;Developer;Stakeholder","The Product Owner maximizes product value."],
+["E","Which distributed version control system was created by Linus Torvalds?","Git","","SVN;Mercurial;CVS","Created in 2005."],
+["E","Which Git command copies a repository?","git clone","clone","git pull;git fetch;git init","clone copies a repo."],
+["E","Which Git command saves a snapshot of staged changes?","git commit","commit","git push;git add;git stash","add stages, commit saves."],
+["E","Which Git command uploads commits to the remote?","git push","push","git pull;git fetch;git merge","push uploads."],
+["E","Testing functionality with no knowledge of the code is?","Black-box testing","Black box;Black-box","White-box testing;Gray-box testing;Unit testing","White-box tests internal logic."],
+["A","Which Scrum role removes obstacles and coaches the team?","Scrum Master","","Product Owner;Developer;Project Manager","Servant-leader of the team."],
+["A","The Scrum meeting where the team looks back to improve its process is the?","Retrospective","Sprint Retrospective","Sprint Review;Daily Scrum;Sprint Planning","Look back, improve."],
+["A","Testing that confirms new changes did not break existing features is?","Regression testing","Regression","Smoke testing;Sanity testing;Alpha testing","Regression = re-test old features."],
+["A","A quick check that a build's basic functions work is?","Smoke testing","Smoke","Regression testing;Sanity testing;Beta testing","Does the build even start?"],
+["A","Testing by a limited group of external users after alpha is?","Beta testing","Beta","Alpha testing;Unit testing;Stress testing","Alpha is internal."],
+["A","Which model pairs every development stage with a matching test stage?","V-model","V model","Waterfall;Spiral;Big-bang","Verification and validation."],
+["A","Which model is iterative and driven by risk analysis?","Spiral model","Spiral","Waterfall;Prototyping;RAD","Spiral focuses on risk."],
+["A","Which UML diagram models actors and their goals with the system?","Use case diagram","Use case","Class diagram;Sequence diagram;State diagram","Use cases show actors and functions."],
+["A","Two developers sharing one workstation is called?","Pair programming","","Mob programming;Code review;Refactoring","An XP practice."],
+["A","Restructuring code without changing its behavior is?","Refactoring","","Debugging;Porting;Compiling","Improves structure only."],
+["A","Which method uses a visual board with WIP limits?","Kanban","","Scrum;XP;Waterfall","To Do / Doing / Done."],
+["A","Maintenance that adapts software to a new environment or OS is?","Adaptive maintenance","Adaptive","Corrective;Perfective;Preventive","Corrective fixes bugs."],
+["A","An architecture of many small independent services is?","Microservices","Microservice","Monolith;Layered;Client-server","A monolith is one deployable unit."],
+["A","The culture that combines development and operations and automates build, test and deploy is?","DevOps","","Agile;Scrum;Lean","Dev + Ops."],
+["D","'Are we building the right product?' describes which: verification or validation?","Validation","","Verification;Regression;Elicitation","Verification = building the product right."],
+["D","Testing that reviews code or documents WITHOUT running them is?","Static testing","Static","Dynamic testing;Smoke testing;Load testing","Reviews, walkthroughs, inspections."],
+["D","Frequently merging code with automated builds and tests is called?","Continuous Integration","CI","Continuous Delivery;Version control;Code freeze","CI."],
+["D","Which law says adding people to a late project makes it later?","Brooks's law","Brooks law;Brookss law","Moore's law;Amdahl's law;Parkinson's law","Brooks's law."],
+["D","The cost of quick, messy shortcuts in code is called?","Technical debt","","Code smell;Legacy code;Scope creep","Debt accrues interest."],
+["D","With a framework, it calls your code. This principle is called?","Inversion of control","IoC","Dependency injection;Encapsulation;Polymorphism","You call a library; a framework calls you."],
+["D","MVC stands for?","Model-View-Controller","Model View Controller","Module-View-Class;Model-Variable-Control;Main-View-Controller","An architecture pattern."],
+["D","Which design pattern ensures a class has only one instance?","Singleton","","Factory;Adapter;Observer","Creational pattern."],
+["D","Which Git command downloads changes WITHOUT merging them?","git fetch","fetch","git pull;git clone;git merge","pull = fetch + merge."],
+["D","Requirements about speed, security and usability are what type?","Non-functional requirements","Non-functional;Nonfunctional","Functional;Business;User","They describe how well, not what."],
+["D","SRS stands for?","Software Requirements Specification","","System Review Standard;Software Release Schedule;Structured Requirements Study","Documents the requirements."],
+["D","Which model involves little planning, with code combined in one go?","Big-bang model","Big bang;Big-bang","Waterfall;Spiral;V-model","Risky."]
+],
+5:[
+["E","The blueprint or template used to create objects is a?","Class","","Object;Method;Package","An object is an instance of a class."],
+["E","A real thing created from a class is a(n)?","Object","Instance","Class;Method;Interface","Created by instantiation."],
+["E","Which Java keyword creates an object?","new","","create;make;this","new returns a reference."],
+["E","Which Java keyword is used to inherit from a class?","extends","","implements;inherits;super","implements is for interfaces."],
+["E","Which Java keyword is used to implement an interface?","implements","","extends;inherits;uses","Class implements interface."],
+["E","The special method that runs when an object is created is the?","Constructor","","Destructor;Getter;Setter","Same name as the class, no return type."],
+["E","Bundling data and methods and hiding internal details is?","Encapsulation","","Abstraction;Inheritance;Polymorphism","Private fields with getters/setters."],
+["E","The return type of a method that returns nothing is?","void","","null;int;empty","void = no return value."],
+["A","Same method name, DIFFERENT parameters, in the same class is?","Method overloading","Overloading","Method overriding;Method hiding;Method chaining","Compile-time polymorphism."],
+["A","A subclass replacing the parent's method with the same signature is?","Method overriding","Overriding","Method overloading;Method hiding;Method shadowing","Runtime polymorphism."],
+["A","Which pillar shows only essential features and hides complexity?","Abstraction","","Encapsulation;Inheritance;Polymorphism","Abstract classes and interfaces."],
+["A","Which pillar means 'one interface, many forms'?","Polymorphism","","Abstraction;Encapsulation;Inheritance","Overloading and overriding."],
+["A","Which pillar lets a class acquire members of another class (is-a)?","Inheritance","","Abstraction;Encapsulation;Polymorphism","Parent and child classes."],
+["A","Which keyword refers to the parent class?","super","","this;parent;base","Calls parent constructors or methods."],
+["A","Which access modifier allows access from the same package and subclasses?","protected","","private;public;default","default = same package only."],
+["A","Which access modifier allows access only inside the same class?","private","","public;protected;default","Most restrictive."],
+["A","Which keyword makes a member belong to the class instead of any object?","static","","final;abstract;const","Shared across all instances."],
+["A","Which keyword prevents reassignment, overriding or inheritance?","final","","static;abstract;const","Variable, method or class."],
+["A","A class that cannot be instantiated and may mix abstract and concrete methods is a(n)?","Abstract class","","Interface;Final class;Static class","Meant to be subclassed."],
+["A","A has-a relationship where the part CAN exist without the whole is?","Aggregation","","Composition;Inheritance;Association","Team and players."],
+["A","A has-a relationship where the part CANNOT exist without the whole is?","Composition","","Aggregation;Inheritance;Dependency","House and rooms."],
+["A","Methods giving controlled read/write access to private fields are?","Getters and setters","Getter and setter;Accessors;Accessor and mutator;Getter/setter","Constructors;Static methods;Interfaces","Tools of encapsulation."],
+["D","Choosing the method to run at runtime from the actual object type is?","Dynamic binding","Late binding;Dynamic dispatch;Runtime polymorphism","Static binding;Early binding;Type casting","Dynamic (late) binding."],
+["D","'Open for extension, closed for modification' is which SOLID principle?","Open/Closed Principle","OCP;Open Closed Principle;Open/Closed","Single Responsibility;Liskov Substitution;Dependency Inversion","The O in SOLID."],
+["D","Who created Java at Sun Microsystems?","James Gosling","Gosling","Bjarne Stroustrup;Guido van Rossum;Dennis Ritchie","Java appeared in 1995."],
+["D","Who created C++?","Bjarne Stroustrup","Stroustrup","James Gosling;Dennis Ritchie;Anders Hejlsberg","C++ supports multiple inheritance."],
+["D","Who created Python?","Guido van Rossum","van Rossum;Guido","James Gosling;Larry Wall;Brendan Eich","Python uses indentation."],
+["D","Which language is regarded as the first OOP language?","Simula","","Smalltalk;C++;Java","Smalltalk (Alan Kay) is a classic pure OOP language."],
+["D","Java source compiles to bytecode that runs on the?","JVM","Java Virtual Machine","JRE;JDK;JIT","Write once, run anywhere."],
+["D","In a UML class diagram, the # symbol means?","protected","","public;private;package","+ public, - private, # protected."],
+["D","Good design aims for which coupling and cohesion?","Low coupling and high cohesion","Low coupling, high cohesion","High coupling and low cohesion;High coupling and high cohesion;Low coupling and low cohesion","Independent modules with a single focus."],
+["D","Is IOException a checked or unchecked exception?","Checked","","Unchecked;Runtime;Fatal","Checked exceptions are verified at compile time."],
+["D","What is the entry point method name in a Java program?","main","public static void main","start;run;init","public static void main(String[] args)."],
+["D","Automatic freeing of unused memory in Java is called?","Garbage collection","Garbage collector;GC","Memory leak;Paging;Swapping","Handled by the JVM."]
+],
+6:[
+["E","Which OSI layer handles logical addressing and routing of packets?","Network layer","Network;Layer 3","Transport layer;Data Link layer;Session layer","Layer 3 uses IP addresses."],
+["E","What is the default port for HTTP?","80","","443;21;25","HTTPS uses 443."],
+["E","Which protocol translates domain names to IP addresses?","DNS","Domain Name System","DHCP;ARP;FTP","The internet's phone book."],
+["E","Which protocol automatically assigns IP configuration to devices?","DHCP","","DNS;ARP;NAT","Also gives mask, gateway and DNS."],
+["E","Which device forwards packets between networks using IP addresses?","Router","","Switch;Hub;Repeater","Layer 3 device."],
+["E","Which device forwards frames by MAC address?","Switch","","Router;Hub;Modem","Layer 2 device."],
+["E","In which topology are all nodes connected to a central switch or hub?","Star topology","Star","Ring;Mesh;Bus","The most common topology."],
+["E","How many bits is an IPv6 address?","128","","32;64;256","IPv4 is 32 bits."],
+["E","A network covering a building or small area is a?","LAN","Local Area Network","WAN;MAN;PAN","Local Area Network."],
+["A","Which transport protocol is reliable and connection-oriented?","TCP","Transmission Control Protocol","UDP;ICMP;IP","Uses a three-way handshake."],
+["A","Which transport protocol is connectionless with no delivery guarantee?","UDP","User Datagram Protocol","TCP;ICMP;ARP","Fast; used for streaming, DNS, games."],
+["A","The TCP three-way handshake is SYN, SYN-ACK and ___ ?","ACK","","FIN;RST;PSH","Connection is established."],
+["A","Which port does SSH use?","22","","23;25;21","SFTP also uses 22."],
+["A","Which port does Telnet use?","23","","22;25;21","Telnet is unencrypted."],
+["A","Which port does SMTP use?","25","","110;143;53","SMTP sends email."],
+["A","Which port does DNS use?","53","","67;80;123","DNS = 53."],
+["A","Which email protocol keeps mail on the server and syncs it?","IMAP","","POP3;SMTP;FTP","POP3 downloads."],
+["A","Which protocol does the ping command use?","ICMP","Internet Control Message Protocol","TCP;UDP;ARP","Echo request/reply."],
+["A","Which technology translates private IP addresses to public ones?","NAT","Network Address Translation","DHCP;DNS;ARP","Saves public addresses."],
+["A","Which protocol maps an IP address to a MAC address?","ARP","Address Resolution Protocol","DNS;DHCP;ICMP","ARP."],
+["A","The subnet mask for /24 is?","255.255.255.0","","255.255.0.0;255.0.0.0;255.255.255.255","24 bits set to 1."],
+["A","How many usable hosts are in a /30 subnet?","2","","4;6;30","2^2 - 2 = 2."],
+["A","How many usable hosts are in a /27 subnet?","30","","32;62;14","2^5 - 2 = 30."],
+["A","What is the PDU of the Data Link layer?","Frame","Frames","Packet;Segment;Bit","Network = packet, Transport = segment."],
+["A","Which IEEE standard is Wi-Fi?","802.11","IEEE 802.11","802.3;802.15;802.16","Ethernet is 802.3."],
+["D","Renting VMs, storage and networks from the cloud is which service model?","IaaS","Infrastructure as a Service","PaaS;SaaS;FaaS","Gmail is SaaS."],
+["D","Gmail is an example of which cloud service model?","SaaS","Software as a Service","IaaS;PaaS;DaaS","Finished software."],
+["D","Which tool orchestrates containers?","Kubernetes","K8s","Docker;Jenkins;Terraform","K8s."],
+["D","Transmission in both directions at once (like a phone call) is?","Full-duplex","Full duplex","Half-duplex;Simplex;Multiplex","Half-duplex is like a walkie-talkie."],
+["D","Which is a private Class A IP range?","10.0.0.0/8","10.0.0.0;10.x.x.x","172.16.0.0/12;192.168.0.0/16;127.0.0.0/8","Private: 10/8, 172.16/12, 192.168/16."],
+["D","What is the IPv4 loopback address?","127.0.0.1","","169.254.0.1;192.168.0.1;0.0.0.0","Points to your own machine."],
+["D","Which IP range is used by APIPA?","169.254.x.x","169.254;169.254.0.0","192.168.x.x;10.0.x.x;127.0.x.x","Self-assigned when DHCP fails."],
+["D","Which OSI layer handles translation, encryption and compression?","Presentation layer","Presentation;Layer 6","Session layer;Application layer;Transport layer","Layer 6."],
+["D","Which Windows command shows the path packets take to a host?","tracert","","ping;ipconfig;netstat","Linux uses traceroute."],
+["D","Which command queries DNS to resolve a domain name?","nslookup","","ping;arp;netstat","DNS lookup tool."],
+["D","Which DNS record type maps a name to an IPv6 address?","AAAA","","A;MX;CNAME","A is IPv4; MX is mail."],
+["D","Which port does RDP use?","3389","","3306;5432;8080","Remote Desktop."],
+["D","The maximum length of a UTP Ethernet cable segment is?","100 meters","100 m;100m;100","50 meters;200 meters;500 meters","The RJ45 UTP limit."],
+["D","Reaching agreement in a distributed system when some participants may be faulty is the?","Byzantine Generals problem","Byzantine Generals;Byzantine fault","Dining Philosophers problem;Producer-consumer problem;Halting problem","Consensus with faulty nodes."],
+["D","The maximum data capacity of a link is its?","Bandwidth","","Throughput;Latency;Jitter","Throughput is the actual speed."],
+["D","The variation in packet delay is called?","Jitter","","Latency;Bandwidth;Throughput","Jitter."]
+],
+7:[
+["E","Which CPU part performs arithmetic and logical operations?","ALU","Arithmetic Logic Unit","Control Unit;Register;Cache","Arithmetic Logic Unit."],
+["E","Which CPU part directs and coordinates operations?","Control Unit","CU","ALU;Register;Cache","The control unit."],
+["E","Which register holds the address of the NEXT instruction?","Program Counter","PC","Instruction Register;Accumulator;Stack Pointer","The IR holds the current instruction."],
+["E","Which register holds the CURRENT instruction?","Instruction Register","IR","Program Counter;Accumulator;MAR","IR."],
+["E","The instruction cycle is?","Fetch-decode-execute","Fetch decode execute","Read-write-store;Load-compile-run;Input-process-output","Fetch, decode, execute."],
+["E","The small fast memory between the CPU and RAM is?","Cache","Cache memory","ROM;SSD;Register","Holds frequently used data."],
+["E","The core goals of information security are known as the?","CIA triad","Confidentiality, Integrity, Availability;Confidentiality Integrity Availability;CIA","AAA;Defense in depth;Zero trust","Confidentiality, Integrity, Availability."],
+["E","Malware that encrypts files and demands payment is?","Ransomware","","Spyware;Adware;Worm","WannaCry (2017) is an example."],
+["E","Malware disguised as legitimate software is a?","Trojan","Trojan horse","Virus;Worm;Rootkit","Pretends to be useful."],
+["E","Self-replicating malware that spreads without a host is a?","Worm","","Virus;Trojan;Spyware","A virus needs a host and user action."],
+["E","Fraudulent messages pretending to be trustworthy are called?","Phishing","","Spoofing;Sniffing;Pharming","Phishing."],
+["A","Malware that attaches to a host file and needs user action to spread is a?","Virus","","Worm;Trojan;Botnet","Needs a host."],
+["A","Malware that secretly monitors user activity is?","Spyware","","Adware;Ransomware;Worm","Spyware."],
+["A","Malware that shows unwanted ads is?","Adware","","Spyware;Ransomware;Trojan","Adware."],
+["A","What does DDoS stand for?","Distributed Denial of Service","Distributed Denial-of-Service","Direct Denial of Service;Distributed Data of Service;Dynamic Denial of System","Flood from many sources."],
+["A","Phishing through SMS is called?","Smishing","","Vishing;Whaling;Spear phishing","SMS phishing."],
+["A","Phishing through voice calls is called?","Vishing","","Smishing;Whaling;Spear phishing","Voice phishing."],
+["A","Phishing aimed at executives is called?","Whaling","","Smishing;Vishing;Spear phishing","Big fish."],
+["A","The architecture where instructions and data share one memory is?","Von Neumann","Von Neumann architecture","Harvard;Flynn;Turing","Stored-program concept."],
+["A","The architecture with separate memories for instructions and data is?","Harvard","Harvard architecture","Von Neumann;RISC;CISC","Harvard."],
+["A","RISC stands for?","Reduced Instruction Set Computer","","Rapid Instruction Set Computer;Reduced Internal Set Computer;Random Instruction Set Computer","ARM is RISC; x86 is CISC."],
+["A","Overlapping instruction stages to raise throughput is?","Pipelining","Pipeline","Caching;Multitasking;Virtualization","Pipelining."],
+["A","Encryption using a public/private key pair is?","Asymmetric encryption","Asymmetric","Symmetric;Hashing;Stream cipher","RSA, ECC."],
+["A","Encryption using ONE shared key is?","Symmetric encryption","Symmetric","Asymmetric;Hashing;Digital signature","AES, DES."],
+["A","A device or software that filters traffic by rules is a?","Firewall","","Router;Proxy;Antivirus","Firewall."],
+["A","Which is issued by a Certificate Authority to bind a public key to an identity?","Digital certificate","Certificate;X.509","Digital signature;Hash;Token","X.509."],
+["A","The most effective defense against SQL injection is?","Parameterized queries","Prepared statements;Parameterized query","Firewalls;Antivirus;Longer passwords","Input stays separate from SQL code."],
+["D","A backup of changes since the last FULL backup is?","Differential backup","Differential","Incremental;Full;Mirror","Incremental = since the last backup of any type."],
+["D","A backup of changes since the last backup of ANY type is?","Incremental backup","Incremental","Differential;Full;Mirror","Incremental."],
+["D","In the 3-2-1 backup rule, how many copies are offsite?","1","one","2;3;0","3 copies, 2 media types, 1 offsite."],
+["D","Which law bounds speedup by the serial fraction of a task?","Amdahl's law","Amdahl;Amdahls law","Moore's Law;Metcalfe's Law;Brooks's Law","Speedup = 1 / ((1-P) + P/N)."],
+["D","Guessing which way a branch goes to keep the pipeline full is?","Branch prediction","","Pipelining;Caching;Forwarding","Branch prediction."],
+["D","Which memory is faster and used in cache: SRAM or DRAM?","SRAM","","DRAM;ROM;EEPROM","DRAM needs refreshing."],
+["D","Which RAM type needs refreshing and is used as main memory?","DRAM","","SRAM;ROM;Flash","DRAM."],
+["D","Which 2017 ransomware worm hit organizations worldwide?","WannaCry","","Petya;ILOVEYOU;Code Red","WannaCry."],
+["D","Which 1988 program is known as the first major internet worm?","Morris worm","Morris","ILOVEYOU;Code Red;Melissa","Morris worm (1988)."],
+["D","Which 2017 breach hit a major US credit bureau?","Equifax","Equifax breach","Target;Yahoo;Sony","Equifax (2017)."],
+["D","A hacker who uses ready-made tools without real skill is a?","Script kiddie","","Black hat;White hat;Gray hat","Script kiddie."],
+["D","Hacking for a political or social cause is?","Hacktivism","","Phreaking;Cracking;Spoofing","Hacktivism."],
+["D","A one-way function used to check integrity is?","Hashing","Hash;Hash function","Encryption;Encoding;Compression","SHA-256, MD5."],
+["D","Which Philippine law is the Cybercrime Prevention Act of 2012?","RA 10175","10175;Republic Act 10175","RA 10173;RA 8792;RA 9995","RA 10173 is the Data Privacy Act."],
+["D","Exploiting human trust instead of technical flaws is?","Social engineering","","Phishing;Brute force;Sniffing","Pretexting, baiting, tailgating."],
+["D","Faking a sender address or identity is?","Spoofing","","Sniffing;Hijacking;Phishing","Spoofing."],
+["D","ARM processors use which instruction set style?","RISC","","CISC;VLIW;MIMD","x86 is CISC."]
+],
+8:[
+["E","An organized collection of related data is a?","Database","","Spreadsheet;File;Network","A DBMS manages databases."],
+["E","SQL stands for?","Structured Query Language","","Standard Query Logic;Sequential Query Language;Simple Question Language","SQL."],
+["E","Which key uniquely identifies each record and cannot be NULL?","Primary key","","Foreign key;Alternate key;Surrogate key","Enforces uniqueness."],
+["E","Which key references the primary key of another table?","Foreign key","","Primary key;Candidate key;Composite key","Enforces referential integrity."],
+["E","Which SQL command removes a table and its structure?","DROP","DROP TABLE","DELETE;TRUNCATE;REMOVE","DELETE removes rows only."],
+["E","Which SQL command retrieves data?","SELECT","","INSERT;UPDATE;GRANT","DML read command."],
+["E","A row in a relational table is also called a?","Tuple","Record","Attribute;Domain;Schema","Row = tuple = record."],
+["E","A column in a relational table is also called an?","Attribute","Field","Tuple;Domain;Schema","Column = attribute = field."],
+["E","Which command undoes uncommitted changes?","ROLLBACK","","COMMIT;SAVEPOINT;REVOKE","COMMIT saves."],
+["A","Which clause filters groups AFTER GROUP BY?","HAVING","","WHERE;ORDER BY;LIMIT","WHERE filters rows before grouping."],
+["A","Which clause filters rows BEFORE grouping?","WHERE","","HAVING;GROUP BY;ORDER BY","WHERE."],
+["A","Which join returns only matching rows from both tables?","INNER JOIN","Inner","LEFT JOIN;RIGHT JOIN;CROSS JOIN","Matches only."],
+["A","Which join returns all rows from both tables?","FULL OUTER JOIN","Full join;Full outer","INNER JOIN;LEFT JOIN;CROSS JOIN","All rows from both."],
+["A","Which join returns all left-table rows plus matches?","LEFT JOIN","Left outer join","RIGHT JOIN;INNER JOIN;CROSS JOIN","LEFT."],
+["A","Which normal form removes transitive dependencies?","3NF","Third normal form","1NF;2NF;BCNF","2NF removes partial dependencies."],
+["A","Which normal form removes partial dependencies?","2NF","Second normal form","1NF;3NF;BCNF","2NF."],
+["A","In ACID, what does the A stand for?","Atomicity","","Availability;Accuracy;Authorization","All or nothing."],
+["A","Which ACID property means committed data survives crashes?","Durability","","Isolation;Consistency;Atomicity","Durability."],
+["A","How is a many-to-many relationship implemented?","Junction table","Associative table;Junction;Bridge table;Linking table","Composite index;View;Trigger","Holds foreign keys to both tables."],
+["A","Which structure speeds up retrieval but slows writes?","Index","Indexes","View;Trigger;Cursor","Index."],
+["A","A saved query that acts like a virtual table is a?","View","","Trigger;Index;Stored procedure","View."],
+["A","Which operator is inclusive of BOTH ends of a range?","BETWEEN","","IN;LIKE;EXISTS","BETWEEN."],
+["A","What is the correct way to test for a NULL value?","IS NULL","","= NULL;== NULL;EQUALS NULL","Never use = NULL."],
+["A","Who proposed the relational model in 1970?","E. F. Codd","Codd;Edgar Codd;Edgar F. Codd","Peter Chen;C. J. Date;Michael Stonebraker","Relational model."],
+["D","A minimal superkey is called a?","Candidate key","","Alternate key;Primary key;Composite key","Candidate key."],
+["D","A candidate key NOT chosen as the primary key is a(n)?","Alternate key","","Composite key;Foreign key;Surrogate key","Alternate key."],
+["D","A primary key spanning multiple columns is a?","Composite key","","Candidate key;Foreign key;Surrogate key","Composite."],
+["D","The number of rows in a table is its?","Cardinality","","Degree;Domain;Schema","Degree = number of columns."],
+["D","The number of columns in a table is its?","Degree","","Cardinality;Domain;Schema","Degree."],
+["D","Which normal form is stricter than 3NF (every determinant is a candidate key)?","BCNF","Boyce-Codd Normal Form;Boyce Codd","4NF;2NF;1NF","BCNF."],
+["D","Which set operator keeps duplicate rows?","UNION ALL","","UNION;INTERSECT;EXCEPT","UNION removes duplicates."],
+["D","COUNT(column) ignores which values?","NULL","NULLs;Null values","Zeros;Duplicates;Blanks","COUNT(*) counts all rows."],
+["D","The structural blueprint of a database is the?","Schema","","Instance;Index;View","Instance = data at a moment."],
+["D","Which theorem says a distributed system cannot guarantee consistency, availability and partition tolerance at once?","CAP theorem","CAP","ACID;BASE;Codd's rules","CAP."],
+["D","MongoDB belongs to which NoSQL family?","Document","Document store;Document database","Key-value;Graph;Column-family","Redis is key-value; Neo4j is graph."]
+],
+9:[
+["E","ETL stands for?","Extract, Transform, Load","Extract Transform Load","Evaluate, Test, Launch;Extract, Translate, Link;Encrypt, Transfer, Log","Pipeline into a warehouse."],
+["E","Learning from labeled data is?","Supervised learning","Supervised","Unsupervised learning;Reinforcement learning;Semi-supervised learning","Labeled input-output pairs."],
+["E","Learning patterns without labels is?","Unsupervised learning","Unsupervised","Supervised learning;Reinforcement learning;Deep learning","Clustering, PCA."],
+["E","Predicting a continuous number (e.g., house price) is?","Regression","","Classification;Clustering;Association","Regression."],
+["E","Predicting a category (e.g., spam or not) is?","Classification","","Regression;Clustering;Association","Classification."],
+["E","Which Python library provides the DataFrame?","pandas","","NumPy;Flask;Tkinter","pandas."],
+["E","Which Python library is for numerical arrays?","NumPy","","pandas;Keras;Matplotlib","NumPy."],
+["E","Which measure of central tendency is the middle value?","Median","","Mean;Mode;Range","Robust to outliers."],
+["E","Which measure is the most frequent value?","Mode","","Mean;Median;Variance","Mode."],
+["E","Which chart best shows a trend over time?","Line chart","Line graph;Line","Pie chart;Histogram;Scatter plot","Line chart."],
+["E","Which chart shows parts of a whole?","Pie chart","Pie","Line chart;Histogram;Scatter plot","Pie."],
+["A","A model that does great on training data but poorly on new data is?","Overfitting","Overfit","Underfitting;Bias;Regularization","Memorized noise."],
+["A","A model too simple, performing poorly on both training and new data is?","Underfitting","Underfit","Overfitting;Variance;Overtraining","Underfitting."],
+["A","The three Vs of big data are?","Volume, Velocity, Variety","Volume Velocity Variety","Value, Veracity, Variance;Volume, Validity, Variety;Velocity, Version, Value","Extended with Veracity and Value."],
+["A","Of the actual positives, how many were found? (metric)","Recall","","Precision;Accuracy;F1 score","Recall."],
+["A","Of the predicted positives, how many were correct? (metric)","Precision","","Recall;Accuracy;F1 score","Precision."],
+["A","The metric balancing precision and recall is the?","F1 score","F1;F-score","Accuracy;ROC-AUC;MSE","Harmonic mean."],
+["A","Which table shows TP, TN, FP and FN?","Confusion matrix","","Truth table;Contingency chart;ROC curve","Confusion matrix."],
+["A","Which is a clustering algorithm?","K-means","K means;KMeans","Linear regression;Naive Bayes;Logistic regression","K-means."],
+["A","Which technique reduces the number of dimensions?","PCA","Principal Component Analysis","K-means;SVM;KNN","PCA."],
+["A","An integrated historical store optimized for analytics is a?","Data warehouse","","Data lake;Data mart;Data pipeline","Data lake = raw."],
+["A","A store of raw data in any format is a?","Data lake","","Data warehouse;Data mart;Database","Data lake."],
+["A","IQR is computed as?","Q3 - Q1","Q3-Q1","Q1 - Q3;Q3 + Q1;Max - Min","Outliers: below Q1-1.5xIQR or above Q3+1.5xIQR."],
+["A","One full pass through the training data is an?","Epoch","","Batch;Iteration;Step","Epoch."],
+["A","Which data split is used to tune hyperparameters?","Validation set","Validation","Training set;Test set;Holdout","Validation."],
+["D","The correlation coefficient r ranges from?","-1 to +1","-1 to 1","0 to 1;0 to 100;-100 to 100","0 = no linear relationship."],
+["D","What is the median of 3, 5, 7, 9, 12, 15?","8","","7;9;9.5","(7 + 9) / 2 = 8."],
+["D","In a normal distribution, 68% of data lies within how many standard deviations?","1","one","2;3;0.5","68-95-99.7 rule."],
+["D","Confident but false AI output is called?","Hallucination","","Bias;Overfitting;Drift","Hallucination."],
+["D","Further training a pretrained model on specific data is?","Fine-tuning","Fine tuning;Finetuning","Prompting;Pre-training;Distillation","Fine-tuning."],
+["D","Which 2017 architecture is behind modern LLMs?","Transformer","Transformers","CNN;RNN;GAN","Transformer."],
+["D","Which method trains a model against a written set of principles (Anthropic)?","Constitutional AI","","RLHF;Federated learning;Chain of thought","Constitutional AI."],
+["D","AI with human-level ability across tasks is?","AGI","Artificial General Intelligence;General AI","Narrow AI;ASI;Weak AI","AGI."],
+["D","Who popularized the term 'vibe coding' in 2025?","Andrej Karpathy","Karpathy","Sam Altman;Elon Musk;Demis Hassabis","Vibe coding."],
+["D","Which French AI lab is known for open-weight models?","Mistral AI","Mistral","Stability AI;Cohere;Hugging Face","Mistral AI."],
+["D","Which company makes Stable Diffusion image models?","Stability AI","Stability","Midjourney;OpenAI;Runway","Stability AI."],
+["D","Which software reads text from images?","OCR","Optical Character Recognition","NLP;ASR;CNN","OCR."],
+["D","Classifying emotion or opinion in text is?","Sentiment analysis","","Speech recognition;OCR;Tokenization","Sentiment analysis."],
+["D","RAG stands for?","Retrieval-Augmented Generation","Retrieval Augmented Generation","Random Access Generation;Recurrent Attention Graph;Ranked Answer Generator","RAG."],
+["D","Descriptive analytics answers which question?","What happened","What happened?","Why it happened;What will happen;What to do","Diagnostic = why; predictive = what will happen."],
+["D","Filling missing values with the mean, median or mode is?","Imputation","Impute","Normalization;Encoding;Binning","Imputation."],
+["D","Which Microsoft tool is a business intelligence dashboard product?","Power BI","PowerBI","Tableau;Looker;Qlik","Tableau is another BI tool."],
+["D","Turning categories into binary columns is?","One-hot encoding","One hot encoding;One-hot","Normalization;Imputation;Binning","One-hot."],
+["D","Which Python library is the classical machine-learning library?","scikit-learn","sklearn;scikit learn","TensorFlow;Keras;pandas","scikit-learn."],
+["D","In reinforcement learning, an agent learns by?","Rewards and penalties","Rewards;Rewards and punishments","Labeled examples;Clustering;Backpropagation","Rewards and penalties."]
+],
+10:[
+["E","Shopee or Lazada selling to individual customers is which e-commerce model?","B2C","Business to Consumer;Business-to-Consumer","B2B;C2C;B2G","Business-to-Consumer."],
+["E","Facebook Marketplace, where individuals sell to individuals, is?","C2C","Consumer to Consumer;Consumer-to-Consumer","B2C;B2B;B2G","C2C."],
+["E","Businesses selling to other businesses is?","B2B","Business to Business;Business-to-Business","B2C;C2C;B2G","B2B."],
+["E","Which HTML tag defines the largest top-level heading?","<h1>","h1","<h6>;<head>;<title>","h1 largest, h6 smallest."],
+["E","CSS stands for?","Cascading Style Sheets","","Creative Style System;Computer Style Sheets;Colorful Style Syntax","CSS controls presentation."],
+["E","HTTP status code 404 means?","Not Found","","Forbidden;OK;Server Error","404 = Not Found."],
+["E","HTTP status code 200 means?","OK","","Created;Not Found;Redirect","Success."],
+["E","What is the default port for HTTPS?","443","","80;21;8080","HTTP = 80."],
+["E","Which tag sets the text on the browser tab?","<title>","title","<head>;<h1>;<meta>","Inside <head>."],
+["E","Which CSS property changes text color?","color","","font-color;text-style;background-color","background-color sets the background."],
+["A","What holds selected items before checkout?","Shopping cart","Cart","Wishlist;Catalog;Inventory","Shopping cart."],
+["A","What securely authorizes and processes online payments?","Payment gateway","","Payment card;Web host;CDN","PayPal, Stripe, PayMongo."],
+["A","Mobile commerce is abbreviated as?","M-commerce","M commerce;Mobile commerce;mcommerce","E-commerce;B2M;S-commerce","M-commerce."],
+["A","Business-to-Government is abbreviated as?","B2G","Business to Government","G2B;G2C;C2G","B2G."],
+["A","SEO stands for?","Search Engine Optimization","Search Engine Optimisation","Social Engagement Optimization;Search Engine Operation;Site Engine Output","SEO improves visibility in search."],
+["A","Which HTML5 semantic element contains main navigation links?","<nav>","nav","<footer>;<aside>;<section>","Helps accessibility and SEO."],
+["A","Which generic HTML container is block-level?","<div>","div","<span>;<section>;<p>","div is block; span is inline."],
+["A","Which generic HTML container is inline?","<span>","span","<div>;<section>;<article>","span is inline."],
+["A","In CSS, a selector starting with # targets what: class or id?","id","ID selector;id selector","class;element;universal","# = id, . = class."],
+["A","In the CSS box model, the space OUTSIDE the border is the?","Margin","","Padding;Border;Content","Content, padding, border, margin."],
+["A","Which CSS technique adapts a page to different screen sizes?","Media queries","Media query;@media","Hyperlinks;Cookies;Inline frames","@media rules."],
+["A","Which Philippine law is the E-Commerce Act?","RA 8792","8792;Republic Act 8792","RA 10173;RA 10175;RA 9995","Passed in 2000."],
+["D","Orders divided by visitors, times 100, is the?","Conversion rate","","Bounce rate;Click-through rate;Average order value","Conversion rate."],
+["D","Which protocol gives the HTTPS padlock?","SSL/TLS","TLS;SSL;SSLTLS","SSH;FTP;SMTP","SSL/TLS."],
+["D","Which HTTP method retrieves data?","GET","","POST;PUT;DELETE","GET."],
+["D","HTTP status code 301 means?","Moved Permanently","Permanent redirect","Temporary redirect;Not Modified;Found","302 is temporary."],
+["D","HTTP status code 503 means?","Service Unavailable","","Bad Gateway;Internal Server Error;Gateway Timeout","503."],
+["D","HTTP status code 403 means?","Forbidden","","Unauthorized;Not Found;Bad Request","403 = Forbidden."],
+["D","Which CSS layout module is for ONE-dimensional layouts?","Flexbox","Flex;CSS Flexbox","Grid;Float;Table","Grid is two-dimensional."],
+["D","Which CSS layout module is for TWO-dimensional layouts?","Grid","CSS Grid","Flexbox;Float;Table","Grid."],
+["D","Which HTML void tag creates a line break?","<br>","br","<hr>;<p>;<lb>","<br> has no closing tag."],
+["D","Which image format is lossless and supports transparency?","PNG","","JPEG;GIF;BMP","JPEG lossy; GIF animation."],
+["D","Which color model is additive and used for screens?","RGB","","CMYK;Grayscale;Pantone","Red, green, blue."],
+["D","Which color model is used for print?","CMYK","","RGB;HSL;Hex","CMYK."],
+["D","Which has the HIGHEST CSS specificity: inline, id, class or element?","Inline","Inline style","ID;Class;Element","Inline beats id beats class beats element."],
+["D","Which Republic Act is the Data Privacy Act?","RA 10173","10173;Republic Act 10173","RA 8792;RA 10175;RA 9995","Data Privacy Act of 2012."],
+["D","Wireframe, mockup, then ___ in the design process?","Prototype","","Sitemap;Deployment;Wireframe","Wireframe, mockup, prototype."],
+["D","Backlinks are part of which kind of SEO?","Off-page SEO","Off-page;Off page SEO","On-page SEO;Technical SEO;Local SEO","Off-page."]
+]};
+/* Daily sets 01-02 (Partner A/B sheets) */
+const RAW_SET={"1":[["E","Inventor of the World Wide Web.","Tim Berners-Lee","","ENIAC;Register;Interpreter","Answer: Tim Berners-Lee."],["E","8 bits; the basic unit of storage.","Byte","","URL;WWW;Tim Berners-Lee","Answer: Byte."],["E","The base-16 number system (0–9, A–F); `0x` prefix.","Hexadecimal","","High-level language;Register;USB","Answer: Hexadecimal."],["E","Tiny, ultra-fast storage inside the CPU.","Register","","Open-source software;Firmware;WWW","Answer: Register."],["D","Michael ___ founded it 1984 from his dorm room; famous for direct sales and the $67B EMC deal.","Dell","","GeForce 256 (1999);Amazon;John Ternus","Answer: Dell."],["D","Niklaus Wirth's teaching language.","Pascal (1970)","Pascal","JavaScript (1995);First Google Doodle (1998);Yahoo! (1994)","Answer: Pascal (1970)."],["D","Founded 1994 by Jeff Bezos as an online bookstore; \"the everything store\"; Seattle.","Amazon","","GeForce 256 (1999);Qualcomm;Adobe","Answer: Amazon."],["A","The base-8 number system (digits 0–7).","Octal","","Shareware;Recycle Bin;Compiler","Answer: Octal."],["D","Founded 2004 by Mark Zuckerberg and Harvard classmates; Menlo Park; renamed Meta 2021.","Meta / Facebook","Meta;Facebook","John Ternus;Yahoo!;TSMC","Answer: Meta / Facebook."],["D","John Backus/IBM; the first widely used high-level language; still runs science.","FORTRAN (1957)","FORTRAN","Margaret Hamilton;NeXT (1985);COBOL (1959)","Answer: FORTRAN (1957)."],["A","The base-2 number system (digits 0–1); the machine's native language.","Binary","","Cache;Nibble;Gigabyte (GB)","Answer: Binary."],["E","Software embedded directly on hardware.","Firmware","","Megabyte (MB);Octal;GUI (Graphical User Interface)","Answer: Firmware."],["E","The World Wide Web, invented by Tim Berners-Lee at CERN (1989).","WWW","","Byte;Hexadecimal;URL","Answer: WWW."],["E","Human-readable code (Python, Java); needs translation to machine code.","High-level language","","GUI (Graphical User Interface);Hexadecimal;Megabyte (MB)","Answer: High-level language."],["E","Approximately 1,024 kilobytes (~1 million bytes).","Megabyte (MB)","Megabyte;MB","Interpreter;Binary;Touchscreen","Answer: Megabyte (MB)."],["D","A live virtual replica of a physical system.","Digital twin","","Load balancer;GitHub;Hypervisor","Answer: Digital twin."],["D","Intel CEO Andy Grove's famous dictum.","Only the paranoid survive","","Steve Ballmer;John Ternus;GeForce 256 (1999)","Answer: Only the paranoid survive."],["D","Flew humans to the Moon on roughly a calculator's power.","Apollo Guidance Computer (1969)","Apollo Guidance Computer","FORTRAN (1957);JavaScript (1995);Yahoo! (1994)","Answer: Apollo Guidance Computer (1969)."],["D","Microsoft's second CEO (2000–2014); the \"developers, developers, developers\" meme; now owns the LA Clippers.","Steve Ballmer","","Qualcomm;Amazon;Dell","Answer: Steve Ballmer."],["A","Universal Serial Bus; the universal peripheral connector standard.","USB","","Ada Lovelace;Machine language;Input device","Answer: USB."],["D","Marketed as \"the world's first GPU.\"","GeForce 256 (1999)","GeForce 256","Cisco;Tencent;Famous acquisitions","Answer: GeForce 256 (1999)."],["D","\"mother of the internet\"; invented the Spanning Tree Protocol that Ethernet depends on.","Radia Perlman","","Osborne 1 (1981);Wikipedia (2001);Stepped reckoner (1673)","Answer: Radia Perlman."],["A","Visual interface: windows, icons, menus.","GUI (Graphical User Interface)","GUI;Graphical User Interface","EDVAC;URL;Register","Answer: GUI (Graphical User Interface)."],["E","First general-purpose electronic computer (1946).","ENIAC","","Megabyte (MB);URL;Open-source software","Answer: ENIAC."],["E","Uniform Resource Locator; a web resource's address.","URL","","High-level language;Hexadecimal;Touchscreen","Answer: URL."],["E","Does user tasks (Word, browsers, games).","Application software","","Firmware;USB;EDVAC","Answer: Application software."],["D","A Burning Man stick figure — literally an out-of-office notice.","First Google Doodle (1998)","First Google Doodle","Yahoo! (1994);Pascal (1970);Radia Perlman","Answer: First Google Doodle (1998)."],["D","Eric Raymond's open-source manifesto: centralized careful builds vs chaotic open collaboration.","The Cathedral and the Bazaar","","P vs NP;Java is to JavaScript;Log4Shell (2021)","Answer: The Cathedral and the Bazaar."],["D","Apple's CEO since September 1, 2026; the ex-hardware-engineering chief who launched the iPhone Duo.","John Ternus","","Dell;Tencent;Qualcomm","Answer: John Ternus."],["D","Founded 1987 by Morris Chang; invented the pure-play foundry; fabricates chips for Apple, NVIDIA, AMD.","TSMC","","Market capitalization;Silicon Valley;Dell","Answer: TSMC."],["A","A device that is BOTH input and output — a classic exam trick.","Touchscreen","","Cache;Machine language;Octal","Answer: Touchscreen."],["E","First stored-program computer design.","EDVAC","","ENIAC;Register;Byte","Answer: EDVAC."],["E","Free to use, study, modify, and distribute.","Open-source software","","Binary;ENIAC;Register","Answer: Open-source software."],["E","Father of the computer; designed the Analytical Engine.","Charles Babbage","","Interpreter;Hexadecimal;Tim Berners-Lee","Answer: Charles Babbage."],["E","Translates and executes code line by line.","Interpreter","","URL;Touchscreen;Open-source software","Answer: Interpreter."],["D","Snapdragon phone chips + the modem patent king; CEO Cristiano Amon.","Qualcomm","","John Ternus;Amazon;Only the paranoid survive","Answer: Qualcomm."],["D","Directory-first portal by Yang & Filo; declined to buy Google — twice.","Yahoo! (1994)","Yahoo!","JavaScript (1995);First Google Doodle (1998);Radia Perlman","Answer: Yahoo! (1994)."],["D","Rebuilding business processes around digital tech.","Digital transformation","","Load balancer;Scalability;Hypervisor","Answer: Digital transformation."],["D","Chinese giant (1998, Pony Ma); WeChat + the world's biggest gaming company by revenue.","Tencent","","Only the paranoid survive;Steve Ballmer;John Ternus","Answer: Tencent."],["D","Digital money on a blockchain (Bitcoin, Ethereum).","Cryptocurrency","","Container;Virtualization;Lambda","Answer: Cryptocurrency."],["D","Founded 1982 by John Warnock & Charles Geschke; PostScript → Photoshop, PDF, Creative Cloud.","Adobe","","John Ternus;Bell Labs;BlackBerry","Answer: Adobe."],["D","The German engineer's Z3 was the first working programmable, fully automatic computer.","Konrad Zuse / Z3 (1941)","Konrad Zuse;Z3 (1941);Konrad Zuse / Z3","Hedy Lamarr;ENIAC vs Colossus;Xerox Alto (1973)","Answer: Konrad Zuse / Z3 (1941)."]],"2":[["E","NOT(A AND B) = NOT A OR NOT B; NOT(A OR B) = NOT A AND NOT B — flip the operator AND negate each operand.","De Morgan's laws","","Recursion;NAND;Truth table","Answer: De Morgan's laws."],["E","An expression false under every possible input.","Contradiction","","Pseudocode;Swapping;Variable","Answer: Contradiction."],["E","Flowchart symbol for a decision (yes/no branch).","Diamond","","Recursion;Iteration;OR","Answer: Diamond."],["D","Can every quickly-verifiable solution also be quickly found? Unsolved; $1M Millennium Prize.","P vs NP","","Morris Worm (1988);Git name origin;Tech debt","Answer: P vs NP."],["A","Assignment vs equality — the classic trap; `=` never compares in C-family.","= vs ==","","Comparison;Modulo (%);NOR","Answer: = vs ==."],["A","Lists every input combination and the output for each.","Truth table","","2^n rule;Constant;Accumulator (loop)","Answer: Truth table."],["E","True when AT LEAST ONE input is true; symbol `||`.","OR","","do-while loop;NAND;Swapping","Answer: OR."],["E","Posttest loop; runs the body first — always executes at least once.","do-while loop","","Pseudocode;Iteration;NAND","Answer: do-while loop."],["E","A function calling itself; requires a base case to terminate.","Recursion","","Iteration;Identity law;Contradiction","Answer: Recursion."],["E","A OR true = true; A AND false = false.","Domination law","","Oval (terminator);De Morgan's laws;Iteration","Answer: Domination law."],["A","A finite, ordered, step-by-step procedure for solving a problem.","Algorithm","","Flowchart;OR;Swapping","Answer: Algorithm."],["A","NOT of OR; true only when both inputs are false.","NOR","","Tautology;XOR;Base case","Answer: NOR."],["E","A loop whose exit condition is never met; runs forever.","Infinite loop","","XNOR;Algorithm;Dry run / trace table","Answer: Infinite loop."],["E","A AND true = A; A OR false = A.","Identity law","","Swapping;Domination law;Recursion","Answer: Identity law."],["E","Manually tracking variable values through code line by line.","Dry run / trace table","Dry run;trace table","XNOR;= vs ==;Infinite loop","Answer: Dry run / trace table."],["E","Exchanging two variables' values, usually needing a temp variable.","Swapping","","do-while loop;Identity law;Contradiction","Answer: Swapping."],["A","Flowchart symbol for start/end.","Oval (terminator)","Oval;terminator","OR;XOR;Boolean algebra","Answer: Oval (terminator)."],["A","The structure repeating steps (loops).","Iteration","","OR;Algorithm;NAND","Answer: Iteration."],["E","A named storage location whose value can change.","Variable","","= vs ==;Diamond;Truth table","Answer: Variable."],["E","NOT of AND; false only when both inputs are true.","NAND","","Dry run / trace table;Identity law;Domination law","Answer: NAND."],["E","Informal, English-like description of an algorithm.","Pseudocode","","Algorithm;Domination law;Oval (terminator)","Answer: Pseudocode."],["A","Equivalence; true when inputs are EQUAL; XOR's inverse.","XNOR","","Parallelogram;Variable;Rectangle","Answer: XNOR."],["A","Flowchart symbol for a process step.","Rectangle","","AND;NOR;OR","Answer: Rectangle."]],"3":[["E","The OS may seize the CPU mid-run to switch.","Preemptive scheduling","","Ready state;Kernel;Convoy effect","Answer: Preemptive scheduling."],["E","Queuing jobs for a slow device (e.g., printer) so programs don't wait.","Spooling","","Preemptive scheduling;Fragmentation;Deadlock's four conditions","Answer: Spooling."],["E","The deadlock-avoidance algorithm checking for safe states.","Banker's algorithm","","Kernel;New state;Thread","Answer: Banker's algorithm."],["D","The layer hosting and managing VMs.","Hypervisor","","Digital twin;Framework vs library;IDE","Answer: Hypervisor."],["A","The interface layer between user and kernel (CLI or GUI).","Shell","","APFS / HFS+;Interrupt;Preemptive scheduling","Answer: Shell."],["A","Wasted gaps between memory allocations.","Fragmentation","","Process;Terminated state;Convoy effect","Answer: Fragmentation."],["E","Waiting only for CPU assignment.","Ready state","","Bootloader;Spooling;Operating system (OS)","Answer: Ready state."],["E","Disk space used as overflow RAM.","Virtual memory","","Kernel;Convoy effect;Operating system (OS)","Answer: Virtual memory."],["E","The program that loads the OS at startup.","Bootloader","","Preemptive scheduling;Windows / macOS;Linux","Answer: Bootloader."],["E","The OS core; manages CPU, memory, and devices.","Kernel","","Windows / macOS;Multiprocessing;Shell","Answer: Kernel."],["A","Spending more time paging than executing; system crawls.","Thrashing","","Internal vs external fragmentation;Terminated state;Banker's algorithm","Answer: Thrashing."],["A","Short jobs stuck queuing behind one long job (FCFS's flaw).","Convoy effect","","Multiprocessing;Terminated state;Deadlock","Answer: Convoy effect."],["E","The smallest unit of execution; a lightweight process sharing memory.","Thread","","Bootloader;Convoy effect;Kernel","Answer: Thread."],["E","The famous open-source OS kernel/family.","Linux","","Spooling;Convoy effect;Thrashing","Answer: Linux."],["E","Software managing hardware and providing services to programs.","Operating system (OS)","Operating system;OS","Ready state;Shell;Deadlock's four conditions","Answer: Operating system (OS)."],["E","Microsoft's desktop OS / Apple's desktop OS.","Windows / macOS","Windows;macOS","Fragmentation;Multiprocessing;Convoy effect","Answer: Windows / macOS."],["A","First Come First Served; strict arrival order; suffers the convoy effect.","FCFS","","Blocked/Waiting state;Banker's algorithm;ext4","Answer: FCFS."],["A","Process just created, not yet ready to run.","New state","","Linux;File system;Round robin","Answer: New state."],["E","Mutual exclusion, hold and wait, no preemption, circular wait — ALL must hold.","Deadlock's four conditions","","Shell;Bootloader;New state","Answer: Deadlock's four conditions."],["E","Using multiple CPUs/cores to run processes truly in parallel.","Multiprocessing","","Bootloader;Shell;Ready state","Answer: Multiprocessing."]],"4":[["E","Shows hardware nodes and where software runs.","Deployment diagram","","Big-bang model;Integration testing;Activity diagram","Answer: Deployment diagram."],["E","Iterative loops, each driven by risk analysis.","Spiral model","","Agile;Activity diagram;Regression testing","Answer: Spiral model."],["E","Re-testing to confirm new changes didn't break old features.","Regression testing","","UML;Spiral model;RAD","Answer: Regression testing."],["A","Unified Modeling Language; standard diagrams for software design.","UML","","Product owner;Sprint review;Implementation phase","Answer: UML."],["D","Continuous Integration / Continuous Delivery; auto-build, test, and ship every change.","CI/CD","","GitHub;Digital transformation;Lambda","Answer: CI/CD."],["E","First SDLC phase; defines WHAT the system must do.","Requirements phase","","Big-bang model;UML;Activity diagram","Answer: Requirements phase."],["E","Defines HOW to build it; produces architecture and specs.","Design phase","","Agile;Sprint planning;Regression testing","Answer: Design phase."],["E","Iterative umbrella philosophy valuing working software, collaboration, adaptability.","Agile","","Black-box testing;Regression testing;Unit testing","Answer: Agile."],["D","Future rework owed for today's shortcuts.","Tech debt","","Log4Shell (2021);The Cathedral and the Bazaar;Morris Worm (1988)","Answer: Tech debt."],["D","The dominant Git hosting platform.","GitHub","","IDE;Framework vs library;Scalability","Answer: GitHub."],["A","Informal all-at-once development; risky, no phases.","Big-bang model","","Validation;Smoke testing;Kanban","Answer: Big-bang model."],["A","Models workflows, often with swimlanes.","Activity diagram","","Verification;Adaptive maintenance;Scrum","Answer: Activity diagram."],["E","Rapid Application Development; prototyping plus component reuse.","RAD","","Agile;Maintenance phase;Integration testing","Answer: RAD."],["E","Tests function without seeing internals.","Black-box testing","","Design phase;Deployment diagram;Maintenance phase","Answer: Black-box testing."],["D","Integrated Development Environment (VS Code, IntelliJ).","IDE","","Scalability;Azure / Google Cloud (GCP);GitHub","Answer: IDE."],["A","Testing combined modules' interactions.","Integration testing","","Smoke testing;V-model;Deployment phase","Answer: Integration testing."],["E","The meeting choosing what enters the sprint.","Sprint planning","","RAD;Requirements phase;Activity diagram","Answer: Sprint planning."],["E","Post-release fixes and improvements.","Maintenance phase","","Spiral model;Regression testing;Big-bang model","Answer: Maintenance phase."],["E","Testing a single module/function in isolation.","Unit testing","","Smoke testing;Design phase;RAD","Answer: Unit testing."],["D","Torvalds: \"I'm an egotistical bastard, and I name all my projects after myself. First Linux, now Git.\"","Git name origin","","WannaCry (2017);The Cathedral and the Bazaar;Log4Shell (2021)","Answer: Git name origin."],["A","Software Requirements Specification; the formal requirements document.","SRS","","Daily standup;Maintenance phase;Design phase","Answer: SRS."],["A","A quick sanity check that the build basically works.","Smoke testing","","Activity diagram;Sprint backlog;Class diagram","Answer: Smoke testing."],["D","A framework calls your code; you call a library.","Framework vs library","","CI/CD;Azure / Google Cloud (GCP);Digital twin","Answer: Framework vs library."]],"5":[["A","Exposing only essential details, hiding complexity.","Abstraction","","Static/compile-time binding;extends;Primitive vs reference types","Answer: Abstraction."],["A","A reference pointing to no object.","null","","super;Primitive vs reference types;Object class","Answer: null."],["A","An action a class can perform.","Method","","Garbage collection;Abstraction;Static/compile-time binding","Answer: Method."],["A","Java's root class; every class ultimately inherits from it.","Object class","","implements;new;Message passing","Answer: Object class."],["A","Value stored directly (int, boolean) vs a reference to an object (String, arrays).","Primitive vs reference types","","public;Garbage collection;Composition","Answer: Primitive vs reference types."],["A","Visible everywhere.","public","","protected;Abstraction;Garbage collection","Answer: public."],["A","Prevents change: final class can't be subclassed, final method can't be overridden, final variable can't be reassigned.","final","","Abstract class;Message passing;public","Answer: final."],["D","\"as car is to carpet\" — the languages are unrelated; the name was 1995 marketing.","Java is to JavaScript","","Y2K;CrowdStrike outage (July 19, 2024);Rickroll","Answer: Java is to JavaScript."],["A","The Java keyword adopting an interface.","implements","","Method;super;Object class","Answer: implements."],["A","The Java keyword creating a subclass.","extends","","protected;null;super","Answer: extends."],["A","Visible in package + subclasses.","protected","","Object class;super;extends","Answer: protected."],["A","Automatic reclaiming of unreachable objects' memory.","Garbage collection","","Composition;Method overloading;Concrete class","Answer: Garbage collection."],["A","Calls resolved at compile time (overloading).","Static/compile-time binding","","Garbage collection;public;super","Answer: Static/compile-time binding."],["A","Reference reaching up to the parent class.","super","","extends;Static/compile-time binding;Abstraction","Answer: super."],["A","The strong \"has-a\" relationship; the part can't exist alone.","Composition","","Package;Method overriding;final","Answer: Composition."]],"6":[["A","A link's maximum data capacity.","Bandwidth","","Layer 1 Physical;ARP;Switch","Answer: Bandwidth."],["A","All-zeros host portion; names the subnet itself.","Network address","","Layer 1 Physical;IP;Segment/datagram","Answer: Network address."],["A","The dominant wired LAN standard (RJ-45 connectors).","Ethernet","","OSI layers (bottom→top);Modem;Bandwidth","Answer: Ethernet."],["D","Microsoft's / Google's cloud platforms.","Azure / Google Cloud (GCP)","Azure;Google Cloud (GCP);Azure / Google Cloud;GCP","Lambda;CI/CD;Cryptocurrency","Answer: Azure / Google Cloud (GCP)."],["A","Protocol resolving an IP address to a MAC address.","ARP","","TCP/IP model;Hub;Default gateway","Answer: ARP."],["D","AWS's serverless compute; run code without servers.","Lambda","","Zero trust;5G;Microservices","Answer: Lambda."],["A","Raw bits/signals over media; hubs, cables, repeaters.","Layer 1 Physical","","OSI layers (bottom→top);Modem;IP","Answer: Layer 1 Physical."],["A","The delay for data to travel; ping measures it.","Latency","","Segment/datagram;Ethernet;Layer 1 Physical","Answer: Latency."],["A","The data unit at the data-link layer.","Frame","","Layer 1 Physical;Latency;Segment/datagram","Answer: Frame."],["A","The transport-layer unit (TCP segment, UDP datagram).","Segment/datagram","","SSL/TLS;Bus topology;ARP","Answer: Segment/datagram."],["D","Vertical = bigger machine; horizontal = more machines.","Scalability","","Azure / Google Cloud (GCP);Load balancer;Endpoint","Answer: Scalability."],["A","Secure Shell; encrypted remote login (port 22).","SSH","","ICMP;Bandwidth;Layer 3 Network","Answer: SSH."],["A","Internet Protocol; logical addressing and routing.","IP","","Bandwidth;SSH;OSI layers (bottom→top)","Answer: IP."],["A","The protocol that SENDS mail (port 25).","SMTP","","Latency;Layer 1 Physical;Ethernet","Answer: SMTP."],["D","A specific URL where an API accepts requests.","Endpoint","","Digital twin;Load balancer;GitHub","Answer: Endpoint."],["A","Forwards frames by MAC address (layer 2); learned addresses per port.","Switch","","Layer 5 Session;Layer 6 Presentation;Segment/datagram","Answer: Switch."],["A","The protocol behind ping and error messages.","ICMP","","Network address;Switch;SMTP","Answer: ICMP."],["A","Routing between networks; routers operate here.","Layer 3 Network","","Latency;Modem;Segment/datagram","Answer: Layer 3 Network."],["A","Physical, Data Link, Network, Transport, Session, Presentation, Application.","OSI layers (bottom→top)","OSI layers;bottom→top","Bandwidth;Switch;Frame","Answer: OSI layers (bottom→top)."],["D","Distributes traffic across multiple servers.","Load balancer","","Hypervisor;Framework vs library;Endpoint","Answer: Load balancer."],["A","Modulates/demodulates signals for the ISP link.","Modem","","tracert / traceroute;Ethernet;RJ-45","Answer: Modem."]],"7":[["A","Filters network traffic by rules.","Firewall","","Confidentiality;Authorization;Integrity","Answer: Firewall."],["A","Data stays accurate and unaltered.","Integrity","","Social engineering;Botnet;Spoofing","Answer: Integrity."],["A","On-chip fast memory tiers; L1 is closest/smallest.","L1/L2/L3 cache","","Two-factor authentication (2FA);DMA (Direct Memory Access);CAPTCHA","Answer: L1/L2/L3 cache."],["A","The challenge test distinguishing humans from bots.","CAPTCHA","","Trojan;ALU;Stack pointer (SP)","Answer: CAPTCHA."],["D","Ransomware built on the stolen NSA \"EternalBlue\" exploit; halted UK hospitals; stopped by Marcus Hutchins' accidental kill-switch domain.","WannaCry (2017)","WannaCry","Wirth's law;Knight Capital (2012);Anonymous / LulzSec","Answer: WannaCry (2017)."],["A","Only authorized eyes see the data.","Confidentiality","","RISC;L1/L2/L3 cache;Botnet","Answer: Confidentiality."],["A","Cycles per second, measured in GHz.","Clock speed","","Social engineering;L1/L2/L3 cache;Digital signature","Answer: Clock speed."],["A","Reduced Instruction Set Computer; small fast instruction set.","RISC","","Botnet;L1/L2/L3 cache;Social engineering","Answer: RISC."],["A","The register accumulating ALU results.","Accumulator","","Memory hierarchy;SQL injection;Trojan","Answer: Accumulator."],["A","Devices transfer to/from memory without the CPU.","DMA (Direct Memory Access)","DMA;Direct Memory Access","Botnet;Pipelining;Integrity","Answer: DMA (Direct Memory Access)."],["A","What you're allowed to do after authentication.","Authorization","","Confidentiality;Two-factor authentication (2FA);Spoofing","Answer: Authorization."],["A","Faking a sender address or identity.","Spoofing","","Authorization;Two-factor authentication (2FA);CAPTCHA","Answer: Spoofing."],["A","Proves authenticity and integrity of a message.","Digital signature","","Clock speed;CISC;Rootkit","Answer: Digital signature."],["D","The Log4j remote-execution flaw; \"the bug that broke the internet\" because the library is everywhere.","Log4Shell (2021)","Log4Shell","File extensions — audio/video;Hanlon's razor / Occam's razor;Brick","Answer: Log4Shell (2021)."],["D","A quantum bit; can hold superposed states, unlike a binary bit.","Qubit","","Load balancer;Scalability;Digital twin","Answer: Qubit."],["A","A network of hijacked machines under one controller.","Botnet","","Authorization;Confidentiality;DMA (Direct Memory Access)","Answer: Botnet."],["A","Combining two factor types: know (password) + have (token/phone) + are (biometrics).","Two-factor authentication (2FA)","Two-factor authentication;2FA","Firewall;CAPTCHA;Digital signature","Answer: Two-factor authentication (2FA)."],["A","Overlapping instruction stages to raise throughput.","Pipelining","","Firewall;Spoofing;Clock speed","Answer: Pipelining."],["A","Exploiting human trust rather than technical flaws.","Social engineering","","Ransomware;Spoofing;Availability","Answer: Social engineering."],["D","The first internet worm; Robert Tappan Morris; infected ~10% of the internet; first CFAA felony conviction.","Morris Worm (1988)","Morris Worm","First tweet;Equifax breach (2017);Yak shaving","Answer: Morris Worm (1988)."]],"8":[["A","Rows and columns of related data.","Table / relation","Table;relation","RDBMS;3NF;LIKE","Answer: Table / relation."],["A","1NF + no partial dependencies (non-key attributes depend on the WHOLE key).","2NF","","UPDATE;TCL;DCL","Answer: 2NF."],["A","Pattern matching with wildcards.","LIKE","","UPDATE;TCL;RDBMS","Answer: LIKE."],["A","Modifies existing rows.","UPDATE","","3NF;2NF;RDBMS","Answer: UPDATE."],["A","2NF + no transitive dependencies.","3NF","","LIMIT;CROSS JOIN;TCL","Answer: 3NF."],["A","Transaction Control Language: COMMIT, ROLLBACK — manages transactions.","TCL","","UPDATE;DBMS;RDBMS","Answer: TCL."],["A","Foreign keys must point to real rows (or be null).","Referential integrity","","LIKE;2NF;DBMS","Answer: Referential integrity."],["A","Removes the whole structure / wipes all rows fast / removes filtered rows.","DROP vs TRUNCATE vs DELETE","","% and _;Referential integrity;Isolation","Answer: DROP vs TRUNCATE vs DELETE."],["A","Database Management System; software managing databases (MySQL, PostgreSQL).","DBMS","","DCL;TCL;3NF","Answer: DBMS."],["A","Data Control Language: GRANT, REVOKE — manages permissions.","DCL","","LIKE;UPDATE;TCL","Answer: DCL."],["A","Relational DBMS; organizes data into related tables.","RDBMS","","MongoDB;Index;UPDATE","Answer: RDBMS."]],"9":[["A","Plots two variables' relationship.","Scatter plot","","Accuracy;Clustering;Underfitting","Answer: Scatter plot."],["A","Fixing missing values, duplicates, errors.","Data cleaning / preprocessing","Data cleaning;preprocessing","Underfitting;Data mining;Clustering","Answer: Data cleaning / preprocessing."],["D","Convolutional Neural Network; the workhorse for image tasks.","CNN","","GAN;Speech recognition / speech-to-text;Chatbot","Answer: CNN."],["D","Meta's 2025 AI re-org chasing \"personal superintelligence\"; led by Alexandr Wang.","Meta Superintelligence Labs (MSL)","Meta Superintelligence Labs;MSL","Anysphere / Cursor;Llama 4 controversy (2025);Demis Hassabis","Answer: Meta Superintelligence Labs (MSL)."],["D","Converting audio to text.","Speech recognition / speech-to-text","Speech recognition;speech-to-text","GPU;GAN;Fine-tuning","Answer: Speech recognition / speech-to-text."],["D","Generative Pre-trained Transformer; OpenAI's flagship model family.","GPT","","GPT-6 family;Vibe coding;Agentic AI","Answer: GPT."],["A","Q3 − Q1; the middle 50% of data.","IQR (interquartile range)","IQR;interquartile range","Line chart;Machine learning;KNN","Answer: IQR (interquartile range)."],["A","Models handling multiple input types (text + image + audio).","Multimodal AI","","Training data;Object detection;Hidden layers","Answer: Multimodal AI."],["D","Personality-chatbot platform; Google licensed its tech and rehired its founders in 2024.","Character.AI","","ChatGPT;RLHF;Le Chat","Answer: Character.AI."],["D","Humans tagging data so supervised models can learn.","Data annotation / labeling","Data annotation;labeling","GAN;Fine-tuning;CNN","Answer: Data annotation / labeling."],["D","DeepMind co-founder/CEO; won the 2024 Nobel Prize in Chemistry for AlphaFold.","Demis Hassabis","","GPT-6 family;Meta AI;Agentic AI","Answer: Demis Hassabis."],["A","The square root of variance; spread in original units.","Standard deviation (σ)","","Data mining;Accuracy;EDA","Answer: Standard deviation (σ)."],["A","Grouping unlabeled data (unsupervised; e.g., k-means).","Clustering","","Data cleaning / preprocessing;EDA;Scatter plot","Answer: Clustering."],["D","Crafting inputs to steer AI output quality.","Prompt engineering","","Chatbot;Fine-tuning;Image classification","Answer: Prompt engineering."],["D","NVIDIA's GPU-computing software platform; the moat rivals can't cross.","CUDA","","Llama 4 controversy (2025);Meta Superintelligence Labs (MSL);GPT-6 family","Answer: CUDA."],["D","Labeling WHAT is in an image.","Image classification","","Fine-tuning;RNN;Speech recognition / speech-to-text","Answer: Image classification."],["D","OpenAI's 2026 generation: Astra (frontier flagship), Sol (paid tiers), Luna (free/Go tiers).","GPT-6 family","","HBM (High-Bandwidth Memory);Cerebras;Llama 4 controversy (2025)","Answer: GPT-6 family."],["A","Discovering patterns in large datasets.","Data mining","","Mode;pandas;Prediction","Answer: Data mining."],["A","Additional training adapting a base model to a specific domain.","Fine-tuning","","LLM;Image classification;Artificial Intelligence (AI)","Answer: Fine-tuning."],["D","The wafer-scale AI chip startup (dinner-plate-sized chips).","Cerebras","","Huawei Ascend;CoreWeave;OpenAI","Answer: Cerebras."],["D","Recurrent Neural Network; sequence-data networks (text, time series).","RNN","","Recommender system;Fine-tuning;NLP","Answer: RNN."],["D","Meta shipped a benchmark-tuned variant of Llama 4 Maverick; a lesson in trusting evals.","Llama 4 controversy (2025)","Llama 4 controversy","GPT-6 family;HBM (High-Bandwidth Memory);Cerebras","Answer: Llama 4 controversy (2025)."],["A","K-nearest neighbors; classifies by the closest labeled points.","KNN","","Classification;Underfitting;k-means","Answer: KNN."],["A","The clustering algorithm where k = the number of groups.","k-means","","Data cleaning / preprocessing;Underfitting;IQR (interquartile range)","Answer: k-means."],["D","The algorithm is the learning procedure; the model is what it produces.","Algorithm vs model","","CNN;NLP;Data annotation / labeling","Answer: Algorithm vs model."],["D","The stacked memory AI chips need; made by SK Hynix, Micron, Samsung.","HBM (High-Bandwidth Memory)","HBM;High-Bandwidth Memory","GPT;Quantization;Meta Superintelligence Labs (MSL)","Answer: HBM (High-Bandwidth Memory)."],["D","Rules-based AI encoding human specialist knowledge.","Expert system","","Image classification;Fine-tuning;Algorithm vs model","Answer: Expert system."],["D","The AI code-editor startup SpaceXAI bought for ~$60B in 2026.","Anysphere / Cursor","Anysphere;Cursor","GPT-6 family;Demis Hassabis;HBM (High-Bandwidth Memory)","Answer: Anysphere / Cursor."],["A","Predicting a CATEGORY (supervised).","Classification","","Analytics pipeline;Pie chart;Descriptive statistics","Answer: Classification."],["A","Graphics Processing Unit; massively parallel chips that made modern AI feasible.","GPU","","Deep learning;Model;Hidden layers","Answer: GPU."],["D","Building software by describing intent to an AI and shipping its output.","Vibe coding","","Demis Hassabis;SpaceXAI;Key benchmarks","Answer: Vibe coding."],["D","Natural Language Processing; computers understanding/generating human language.","NLP","","GAN;Data annotation / labeling;Expert system","Answer: NLP."],["D","AI video-generation company (Gen series).","Runway","","Llama 4 controversy (2025);Meta AI;HBM (High-Bandwidth Memory)","Answer: Runway."],["A","Exploratory Data Analysis; the get-to-know-the-data stage.","EDA","","Underfitting;IQR (interquartile range);Accuracy","Answer: EDA."],["A","Too simple to capture the pattern; poor on both.","Underfitting","","IQR (interquartile range);Clustering;Accuracy","Answer: Underfitting."],["D","The basic unit: weighted inputs → activation → output.","Neuron / perceptron","Neuron;perceptron","Expert system;Image classification;Data annotation / labeling","Answer: Neuron / perceptron."],["D","Models that plan, call tools, and act over many steps — the 2025-26 shift from chat to action.","Agentic AI","","Meta AI;Meta Superintelligence Labs (MSL);Quantization","Answer: Agentic AI."],["D","Predicting what a user will like next.","Recommender system","","Chatbot;CNN;Neuron / perceptron","Answer: Recommender system."],["D","Meta's assistant + research org; now powered by the Muse family.","Meta AI","","HBM (High-Bandwidth Memory);Character.AI;xAI","Answer: Meta AI."],["A","Correct predictions over all predictions.","Accuracy","","Recommendation engine;Dataset;Median","Answer: Accuracy."],["A","A conversational AI interface.","Chatbot","","AI bias;Narrow/Weak AI;Weights","Answer: Chatbot."],["D","Shrinking model weight precision (e.g., to 4-bit) so big models run on ordinary hardware.","Quantization","","Ilya Sutskever;Llama 4 controversy (2025);Demis Hassabis","Answer: Quantization."],["D","Generative Adversarial Network; two networks competing to generate realistic content.","GAN","","Data annotation / labeling;Expert system;Prompt engineering","Answer: GAN."],["D","Elon Musk's AI company (founded 2023), maker of Grok; acquired by SpaceX in February 2026.","xAI","","GPT-6 family;Meta Superintelligence Labs (MSL);GPT","Answer: xAI."]],"10":[["A","Hyperlink + destination URL.","<a> + href","a;href","CSS;<form> / <input>;SSL/TLS","Answer: <a> + href."],["A","Opens a link in a new tab.","target=\"_blank","","CSS;SSL/TLS;<form> / <input>","Answer: target=\"_blank."],["A","The web's behavior/interactivity language.","JavaScript","","Conversion rate;Checkout;HTML","Answer: JavaScript."],["A","The encryption behind HTTPS; the padlock.","SSL/TLS","","Bounce rate;JavaScript;Mobile-first","Answer: SSL/TLS."],["A","Collects user input / an input field.","<form> / <input>","form;input","HTML;Mobile-first;<a> + href","Answer: <form> / <input>."],["A","Buying/selling goods and services online.","E-commerce","","<img> + src + alt;target=\"_blank;SSL/TLS","Answer: E-commerce."],["A","The % of visitors leaving after one page.","Bounce rate","","<form> / <input>;HTML;<img> + src + alt","Answer: Bounce rate."],["A","Cascading Style Sheets; the web's style language.","CSS","","Bounce rate;Tag;E-commerce","Answer: CSS."],["A","Designing for the smallest screens first.","Mobile-first","","B2C;Responsive design;<h1>–<h6>","Answer: Mobile-first."],["D","Brendan Eich built it in ~10 days at Netscape; despite the name, unrelated to Java.","JavaScript (1995)","JavaScript","DNS (1983);Email + the @ sign (1971);Mac OS lineage","Answer: JavaScript (1995)."],["A","Markup keyword in angle brackets.","Tag","","<img> + src + alt;JavaScript;Mobile-first","Answer: Tag."],["A","Image + file path + accessibility/fallback text.","<img> + src + alt","img;src;alt","CSS;HTML;<a> + href","Answer: <img> + src + alt."],["A","HyperText Markup Language; the web's structure language.","HTML","","<p>;<title>;Mobile-first","Answer: HTML."]]};
+Object.keys(RAW_SET).forEach(k=>{RAW[k]=(RAW[k]||[]).concat(RAW_SET[k])});
+const DIFF={E:"Easy",A:"Average",D:"Difficult"};
+const BANK={questions:[]};
+function expandRaw(){
+  BANK.questions=[];
+  Object.keys(RAW).forEach(sid=>RAW[sid].forEach((r,i)=>BANK.questions.push({
+    id:"s"+sid+"-"+(i+1),scope:+sid,difficulty:DIFF[r[0]],question:r[1],answer:r[2],
+    aliases:r[3]?r[3].split(";"):[],distractors:r[4].split(";"),explanation:r[5]})));
+}
+const CUSTOM_KEY="isoqb_custom_v1",WEAK_KEY="isoqb_weak_v1";
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let custom=lsGet(CUSTOM_KEY,[]);
+function allQuestions(){return BANK.questions.concat(custom)}
+
+/* ===================== HELPERS ===================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,"");
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const scopeName=id=>(SCOPES.find(s=>s.id===id)||{name:"Custom"}).name;
+const fmt=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")};
+function isCorrect(it){
+  if(it.user==null||it.user==="")return false;
+  if(it.format==="MC")return it.user===it.answer;
+  const u=norm(it.user);if(!u)return false;
+  return [it.answer].concat(it.aliases||[]).some(a=>norm(a)===u);
+}
+
+/* ===================== STATE ===================== */
+let setup={scopes:SCOPES.map(s=>s.id),format:"MC",timer:60,difficulty:"Mixed"};
+let T=null;       // current test
+let tick=null;
+
+/* ===================== SETUP SCREEN ===================== */
+function counts(){const c={};allQuestions().forEach(q=>c[q.scope]=(c[q.scope]||0)+1);return c}
+function renderSetup(){
+  clearInterval(tick);T=null;
+  const c=counts(),total=allQuestions().length,weak=lsGet(WEAK_KEY,[]).length;
+  
+  $("#app").innerHTML=`
+  <div class="card"><h2>1 · Choose scopes</h2>
+    <div class="sg">${SCOPES.map(s=>{const on=setup.scopes.includes(s.id),b=lsGet(ST_KEY,{})[s.id]||{t:0,c:0},p=b.t?Math.round(b.c/b.t*100):0;
+      return `<label class="sc ${on?"on":""}" style="--c:${SC_COL[s.id]}"><input type="checkbox" ${on?"checked":""} onchange="toggleScope(${s.id},this.checked)"><span class="ck"></span><span class="ic">${SC_ICO[s.id]}</span><span class="no">SCOPE ${s.id}</span><span class="nm">${esc(s.name)}</span><span class="meta"><span>${c[s.id]||0} questions</span><span>${b.t?p+"% mastery":"New"}</span></span><span class="mb"><i style="width:${p}%"></i></span></label>`}).join("")}</div>
+    <div class="links"><button onclick="setScopes(true)">Select all</button><button onclick="setScopes(false)">Clear</button></div>
+  </div>
+  <div class="card"><h2>2 · Format</h2><div class="sg">${radio("format","MC")}${radio("format","ID")}</div></div>
+  <div class="card"><h2>3 · Timer</h2><div class="sg">${radio("timer",60)}${radio("timer",0)}</div></div>
+  <div class="card"><h2>4 · Difficulty</h2><div class="sg">${radio("difficulty","Easy")}${radio("difficulty","Average")}${radio("difficulty","Difficult")}${radio("difficulty","Mixed")}</div></div>
+  <div class="card startc"><div class="sum">
+      <span class="chip">📚 ${setup.scopes.length} scope${setup.scopes.length==1?"":"s"}</span><span class="chip">${setup.format==="MC"?"🔘 Multiple choice":"✍️ Identification"}</span>
+      <span class="chip">${setup.timer?"⏱️ "+setup.timer+" min":"♾️ No timer"}</span><span class="chip">🎲 ${setup.difficulty}</span>
+      <span class="chip">${allQuestions().filter(q=>setup.scopes.includes(q.scope)&&(setup.difficulty==="Mixed"||q.difficulty===setup.difficulty)).length} questions in this quiz</span></div>
+    <button class="gold big go" onclick="startFromSetup()" ${setup.scopes.length?"":"disabled"}>▶ Start quiz</button>
+    <div class="wk">${weak?`🎯 ${weak} weak item(s) saved. They get priority in "Try Again".`:"Questions you miss are saved on this device and prioritized in \"Try Again\"."}</div>
+  </div>
+  <div class="card noprint"><details><summary>Question bank (import / schema)</summary>
+    <p class="muted">Add your own questions by importing a JSON file that follows the sample schema. Imported questions are stored in this browser only.</p>
+    <div class="links"><button onclick="downloadSample()">Download sample JSON</button>
+    <label><button onclick="document.getElementById('imp').click()">Import JSON…</button><input id="imp" type="file" accept=".json,application/json" hidden onchange="importJSON(this)"></label>
+    <button onclick="clearCustom()">Remove imported</button><button onclick="clearWeak()">Reset weak list</button></div>
+    <div id="impmsg" class="muted" style="margin-top:8px">${custom.length?custom.length+" imported question(s) active.":""}</div>
+  </details></div>`;
+}
+const RC={"format:MC":["🔘","Multiple Choice","Pick the best of 4 options","#1565C0"],"format:ID":["✍️","Identification","Type the exact term","#8E24AA"],
+"timer:60":["⏱️","60 minutes","Exam-style countdown","#C62828"],"timer:0":["♾️","No timer","Study at your own pace","#2E7D32"],
+"difficulty:Easy":["🟢","Easy","Core terms and basics","#2E7D32"],"difficulty:Average":["🟡","Average","Typical quiz-bee level","#EF6C00"],
+"difficulty:Difficult":["🔴","Difficult","Tricky, deeper items","#C62828"],"difficulty:Mixed":["🎲","Mixed","Easy, Average and Difficult","#3949AB"]};
+function radio(name,val){const on=String(setup[name])===String(val),r=RC[name+":"+val];
+  return `<label class="sc rc ${on?"on":""}" style="--c:${r[3]}"><input type="radio" name="${name}" ${on?"checked":""} onchange="setOpt('${name}','${val}')"><span class="ck"></span><span class="ic">${r[0]}</span><span class="nm">${r[1]}</span><span class="meta">${r[2]}</span></label>`}
+function setOpt(n,v){setup[n]=(n==="timer")?+v:v;renderSetup()}
+function toggleScope(id,on){setup.scopes=on?setup.scopes.concat(id):setup.scopes.filter(x=>x!==id);renderSetup()}
+function setScopes(all){setup.scopes=all?SCOPES.map(s=>s.id):[];renderSetup()}
+
+/* ===================== TEST GENERATION ===================== */
+function pickQuestions(pool,n,diff){
+  let out=[],note="";
+  if(diff==="Mixed"){
+    const g={Easy:shuffle(pool.filter(q=>q.difficulty==="Easy")),Average:shuffle(pool.filter(q=>q.difficulty==="Average")),Difficult:shuffle(pool.filter(q=>q.difficulty==="Difficult"))};
+    const order=["Easy","Average","Difficult"];let i=0,guard=0;
+    while(out.length<n&&guard++<5000){const k=order[i%3];if(g[k].length)out.push(g[k].shift());i++;if(order.every(o=>!g[o].length))break}
+  }else{
+    const m=shuffle(pool.filter(q=>q.difficulty===diff));out=m.slice(0,n);
+    if(out.length<n){const rest=shuffle(pool.filter(q=>q.difficulty!==diff));
+      note=`Only ${m.length} ${diff} question(s) exist in the selected scopes, so the rest were topped up with other difficulties.`;out=out.concat(rest.slice(0,n-out.length))}
+  }
+  return {items:shuffle(out),note};
+}
+function buildItem(q,format){
+  const it={id:q.id,scope:q.scope,difficulty:q.difficulty,question:q.question,answer:q.answer,aliases:q.aliases||[],explanation:q.explanation||"",format,user:null,flag:false};
+  if(format==="MC"){
+    const d=shuffle((q.distractors||[]).filter(x=>norm(x)!==norm(q.answer))).slice(0,3);
+    it.choices=shuffle([q.answer].concat(d));
+  }
+  return it;
+}
+function startFromSetup(){
+  const pool=allQuestions().filter(q=>setup.scopes.includes(q.scope));
+  if(!pool.length)return;
+  const d=setup.difficulty,cnt=d==="Mixed"?pool.length:pool.filter(q=>q.difficulty===d).length;
+  const r=cnt?pickQuestions(pool,cnt,d):pickQuestions(pool,pool.length,"Mixed");
+  let note=cnt?r.note:"No "+d+" questions exist in the selected scopes, so all difficulties are included.";
+  launch(r.items,Object.assign({},setup),note,"Standard");
+}
+function launch(qs,opts,note,mode){
+  T={opts,mode,note,items:qs.map(q=>buildItem(q,opts.format)),idx:0,start:Date.now(),deadline:opts.timer?Date.now()+opts.timer*60000:0,submitted:false};
+  renderQuiz();
+  clearInterval(tick);tick=setInterval(onTick,500);
+  window.scrollTo(0,0);
+}
+const FL={Easy:15,Average:20,Difficult:30},FP={Easy:3,Average:5,Difficult:7};
+function onTick(){
+  if(!T||T.submitted)return;const el=$("#timer");
+  if(T.mode==="Finals"){const left=(T.qEnd-Date.now())/1000;if(el){el.textContent=Math.max(0,Math.ceil(left))+"s";el.classList.toggle("low",left<=5)}
+    if(left<=0){if(T.idx===T.items.length-1)submitTest(true);else go(1)}return}
+  if(T.deadline){const left=(T.deadline-Date.now())/1000;
+    if(el){el.textContent=fmt(left);el.classList.toggle("low",left<300)}
+    if(left<=0){submitTest(true)}
+  }else if(el){el.textContent=fmt((Date.now()-T.start)/1000)}
+}
+
+/* ===================== QUIZ SCREEN ===================== */
+function renderQuiz(){if(T.mode==="Finals"&&T.qIdx!==T.idx){T.qIdx=T.idx;T.qEnd=Date.now()+FL[T.items[T.idx].difficulty]*1000}
+  const it=T.items[T.idx],n=T.items.length;
+  const answered=T.items.filter(x=>x.user!=null&&x.user!=="").length;
+  let body="";
+  if(it.format==="MC"){
+    body=it.choices.map((c,i)=>`<div class="choice ${it.user===c?"sel":""}" onclick="pick(${i})"><b>${"ABCD"[i]}</b><span>${esc(c)}</span></div>`).join("");
+  }else{
+    body=`<input class="ans" id="ans" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer…" value="${esc(it.user||"")}" oninput="typed(this.value)" onkeydown="if(event.key==='Enter'){nextQ()}">
+    <div class="muted" style="margin-top:6px">Spelling matters. Capitalization and punctuation are ignored.</div>`;
+  }
+  $("#app").innerHTML=`
+  <div class="qbar"><div><b>Question ${T.idx+1}</b> / ${n} <span class="muted" style="color:#cfd8f3">· ${answered} answered</span></div>
+    <div class="timer" id="timer">${T.deadline?fmt((T.deadline-Date.now())/1000):fmt((Date.now()-T.start)/1000)}</div>
+    <div><button class="noprint" onclick="confirmSubmit()">Submit</button></div></div>
+  ${T.note&&T.idx===0?`<div class="note">${esc(T.note)}</div>`:""}
+  <div class="qlayout"><div class="card">
+    <div class="qmeta"><span class="tag">${esc(scopeName(it.scope))}</span><span class="tag ${it.difficulty[0]}">${it.difficulty}</span>${T.mode!=="Standard"?`<span class="tag">${esc(T.mode)}</span>`:""}</div>
+    <div class="qtext">${esc(it.question)}</div>${body}
+    <div class="nav">${T.mode==="Finals"?"":`<button onclick="go(-1)" ${T.idx?"":"disabled"}>← Previous</button>`}
+      <button onclick="toggleFlag()">${it.flag?"★ Flagged":"☆ Flag for review"}</button>
+      <button class="pri" onclick="nextQ()">${T.idx===n-1?"Review & submit":"Next →"}</button></div>
+  </div>
+  <aside class="card"><h2>Question map</h2>
+  <div class="mpb"><i style="width:${Math.round(answered/n*100)}%"></i></div>
+  <div class="mpt"><span><b>${answered}</b> of ${n} answered</span><span>${T.items.filter(x=>x.flag).length} flagged</span></div>
+  <div class="pal ${T.mode==="Finals"?"locked":""}">${T.items.map((x,i)=>`<button class="${i===T.idx?"cur":x.user!=null&&x.user!==""?"done":""} ${x.flag?"flag":""}" onclick="jump(${i})" aria-label="Question ${i+1}">${i+1}</button>`).join("")}</div>
+  <div class="lg"><span><i class="sw cur"></i>Current</span><span><i class="sw dn"></i>Answered</span><span><i class="sw"></i>Unanswered</span><span><i class="sw fl"></i>Flagged</span></div></aside></div>`;
+  if(it.format==="ID"){const a=$("#ans");if(a)a.focus({preventScroll:true})}
+}
+function pick(i){const it=T.items[T.idx];it.user=it.choices[i];renderQuiz()}
+function typed(v){const it=T.items[T.idx];it.user=v.trim()?v:null;
+  // light update of the palette only (keep focus in input)
+  const b=document.querySelectorAll(".pal button")[T.idx];if(b)b.classList.toggle("done",!!it.user)}
+function go(d){if(T.mode==="Finals"&&d<0)return;T.idx=Math.min(T.items.length-1,Math.max(0,T.idx+d));renderQuiz()}
+function jump(i){if(T.mode==="Finals")return;T.idx=i;renderQuiz();window.scrollTo(0,0)}
+function nextQ(){if(T.idx===T.items.length-1)confirmSubmit();else go(1)}
+function toggleFlag(){T.items[T.idx].flag=!T.items[T.idx].flag;renderQuiz()}
+function confirmSubmit(){
+  const un=T.items.filter(x=>x.user==null||x.user==="").length,fl=T.items.filter(x=>x.flag).length;
+  let m="Submit your answers?";
+  if(un)m=`You still have ${un} unanswered question(s).`+(fl?` ${fl} flagged.`:"")+"\nSubmit anyway?";
+  if(confirm(m))submitTest(false);
+}
+
+/* ===================== SUBMIT & RESULTS ===================== */
+function submitTest(auto){
+  if(!T||T.submitted)return;
+  T.submitted=true;clearInterval(tick);T.end=Date.now();T.auto=auto;
+  T.items.forEach(it=>it.ok=isCorrect(it));
+  // update weak list
+  let weak=new Set(lsGet(WEAK_KEY,[]));
+  T.items.forEach(it=>{if(it.ok)weak.delete(it.id);else weak.add(it.id)});
+  lsSet(WEAK_KEY,Array.from(weak));
+  T.filter="all";renderResults();window.scrollTo(0,0);
+}
+function renderResults(){
+  const n=T.items.length,ok=T.items.filter(x=>x.ok).length,na=T.items.filter(x=>x.user==null||x.user==="").length,bad=n-ok-na;
+  const pct=Math.round(ok/n*100),used=(T.end-T.start)/1000;
+  const by={};T.items.forEach(it=>{const b=by[it.scope]||(by[it.scope]={t:0,c:0});b.t++;if(it.ok)b.c++});
+  const byd={Easy:{t:0,c:0},Average:{t:0,c:0},Difficult:{t:0,c:0}};T.items.forEach(it=>{byd[it.difficulty].t++;if(it.ok)byd[it.difficulty].c++});
+  const col=pct>=75?"var(--ok)":pct>=50?"var(--gold)":"var(--bad)";
+  const msg=pct>=90?"Outstanding!":pct>=75?"Strong result. Keep sharpening the weak spots.":pct>=50?"Decent. Use Try Again to drill your misses.":"Keep going. Review the explanations, then Try Again.";
+  const rows=T.items.map((it,i)=>({it,i})).filter(({it})=>T.filter==="all"||(T.filter==="wrong"&&!it.ok)||(T.filter==="right"&&it.ok)||(T.filter==="flag"&&it.flag));
+  $("#app").innerHTML=`
+  <div class="printhead"><h2 style="margin:0">IT Skills Olympics · Quiz Bee Practice Result</h2>
+    <div class="muted">${new Date(T.end).toLocaleString()} · ${T.opts.format==="MC"?"Multiple Choice":"Identification"} · ${esc(T.opts.difficulty)} · ${T.opts.timer?T.opts.timer+" min timer":"No timer"} · Score ${ok}/${n} (${pct}%)</div></div>
+  <div class="card"><h2>Results ${T.mode!=="Standard"?"· "+esc(T.mode):""}</h2>
+    <div class="score"><div class="ring" style="background:conic-gradient(${col} ${pct*3.6}deg,#e8ecf6 0)"><div style="background:#fff;border-radius:50%;width:78%;height:78%;display:grid;place-items:center">${pct}%</div></div>
+    <div class="stats"><div class="stat b"><b>${ok} / ${n}</b>Total score</div><div class="stat g"><b>${ok}</b>Correct</div><div class="stat r"><b>${bad}</b>Incorrect</div><div class="stat y"><b>${na}</b>Unanswered</div><div class="stat b"><b>${fmt(used)}</b>Time used${T.auto?" (time up)":""}</div></div></div>
+    <p class="muted" style="margin-bottom:0">${msg}</p>
+    <div class="links noprint" style="margin-top:12px"><button class="gold" onclick="tryAgain()" ${ok===n?"disabled":""}>↻ Try Again (focus on weak items)</button><button class="pri" onclick="exportPDF()">⬇ Export PDF</button><button onclick="renderSetup()">New quiz</button></div>
+    ${ok===n?`<div class="muted noprint">Perfect score. Nothing to retry.</div>`:""}</div>
+  <div class="card"><h2>Breakdown by scope</h2><table><tr><th>Scope</th><th>Score</th><th style="width:30%">Accuracy</th></tr>
+    ${Object.keys(by).map(k=>{const b=by[k],p=Math.round(b.c/b.t*100);return `<tr><td>${esc(scopeName(+k))}</td><td>${b.c}/${b.t}</td><td><div class="bar"><i style="width:${p}%;background:${p>=75?"var(--ok)":p>=50?"var(--gold)":"var(--bad)"}"></i></div></td></tr>`}).join("")}</table>
+    <table style="margin-top:12px"><tr><th>Difficulty</th><th>Score</th></tr>${Object.keys(byd).filter(k=>byd[k].t).map(k=>`<tr><td>${k}</td><td>${byd[k].c}/${byd[k].t}</td></tr>`).join("")}</table></div>
+  <div class="card"><h2>Detailed review</h2>
+    <div class="filters">${[["all","All ("+n+")"],["wrong","Incorrect/unanswered ("+(bad+na)+")"],["right","Correct ("+ok+")"],["flag","Flagged ("+T.items.filter(x=>x.flag).length+")"]].map(f=>`<button class="${T.filter===f[0]?"act":""}" onclick="setFilter('${f[0]}')">${f[1]}</button>`).join("")}</div>
+    ${rows.map(({it,i})=>reviewItem(it,i)).join("")||'<div class="muted">Nothing to show for this filter.</div>'}</div>`;
+}
+function reviewItem(it,i){
+  const unans=it.user==null||it.user==="";
+  const cls=it.ok?"ok":unans?"na":"no";
+  let mid="";
+  if(it.format==="MC"){
+    mid=`<div>${it.choices.map((c,k)=>`<span class="ch ${c===it.answer?"c":c===it.user?"w":""}">${"ABCD"[k]}. ${esc(c)}${c===it.user?" ← yours":""}${c===it.answer?" ✓":""}</span>`).join("")}</div>`;
+  }else{
+    mid=`<div class="line">Your answer: <span class="${it.ok?"good":"badc"}">${unans?"(no answer)":esc(it.user)}</span></div>
+         <div class="line">Correct answer: <span class="good">${esc(it.answer)}</span>${it.aliases.length?` <span class="muted">(also accepted: ${esc(it.aliases.join(", "))})</span>`:""}</div>`;
+  }
+  return `<div class="rev ${cls}"><div class="qmeta"><span class="tag">#${i+1}</span><span class="tag">${esc(scopeName(it.scope))}</span><span class="tag ${it.difficulty[0]}">${it.difficulty}</span><span class="tag" style="background:${it.ok?"var(--okbg)":unans?"#fff3d6":"var(--badbg)"}">${it.ok?"Correct":unans?"Unanswered":"Incorrect"}</span>${it.flag?'<span class="tag">★ flagged</span>':""}</div>
+    <div class="q">${esc(it.question)}</div>${mid}
+    ${it.format==="MC"&&!it.ok?`<div class="line">Correct answer: <span class="good">${esc(it.answer)}</span></div>`:""}
+    <div class="exp"><b>Why:</b> ${esc(it.explanation||"—")}</div></div>`;
+}
+function setFilter(f){T.filter=f;renderResults()}
+function exportPDF(){
+  T.filter="all";renderResults();
+  alert('In the print dialog, choose "Save as PDF" as the destination.');
+  setTimeout(()=>window.print(),100);
+}
+
+/* ===================== TRY AGAIN (weak-focus) ===================== */
+function tryAgain(){
+  const all=allQuestions(),byId=new Map(all.map(q=>[q.id,q]));
+  const missed=T.items.filter(x=>!x.ok).map(x=>byId.get(x.id)).filter(Boolean);
+  const seen=new Set(T.items.map(x=>x.id));
+  const scopes=T.opts.scopes;
+  const missedIds=new Set(missed.map(q=>q.id));
+  const storedWeak=lsGet(WEAK_KEY,[]).map(id=>byId.get(id)).filter(q=>q&&scopes.includes(q.scope)&&!missedIds.has(q.id));
+  // weak scopes first when topping up
+  const bySc={};T.items.forEach(it=>{const b=bySc[it.scope]||(bySc[it.scope]={t:0,c:0});b.t++;if(it.ok)b.c++});
+  const rank=s=>{const b=bySc[s];return b?b.c/b.t:1};
+  const unseen=all.filter(q=>scopes.includes(q.scope)&&!seen.has(q.id)&&!missedIds.has(q.id)&&!storedWeak.includes(q));
+  const fresh=shuffle(unseen).sort((a,b)=>rank(a.scope)-rank(b.scope));
+  let list=shuffle(missed).concat(shuffle(storedWeak)).concat(fresh);
+  // if still short, reuse correct items from the previous test
+  const cap=T.items.length;if(list.length<cap){const got=new Set(list.map(q=>q.id));list=list.concat(shuffle(all.filter(q=>scopes.includes(q.scope)&&!got.has(q.id))))}
+  list=list.slice(0,cap);
+  const nm=Math.min(missed.length,cap);
+  const note=`Weak-focus test: the first ${nm} item(s) are the ones you missed or left blank last time, shuffled in with new questions from your selected scopes (weakest scopes first).`;
+  launch(shuffle(list),Object.assign({},T.opts),note,"Try Again");
+}
+
+/* ===================== IMPORT / SCHEMA ===================== */
+const SAMPLE={
+  "version":1,
+  "scopes":[{"id":1,"name":"Basic Computer Concepts & General IT"}],
+  "questions":[
+    {"id":"c1-1","scope":1,"difficulty":"Easy","question":"The brain of the computer that executes instructions","answer":"CPU","aliases":["Central Processing Unit","Processor"],"distractors":["RAM","Motherboard","GPU"],"explanation":"The CPU fetches, decodes and executes instructions."},
+    {"id":"c8-1","scope":8,"difficulty":"Average","question":"Which clause filters groups after GROUP BY?","answer":"HAVING","aliases":[],"distractors":["WHERE","ORDER BY","LIMIT"],"explanation":"WHERE filters rows before grouping; HAVING filters groups."},
+    {"id":"c9-1","scope":9,"difficulty":"Difficult","question":"Of the actual positives, how many were found? (metric)","answer":"Recall","aliases":[],"distractors":["Precision","Accuracy","F1 score"],"explanation":"Recall = TP / (TP + FN)."}
+  ]
+};
+function downloadSample(){
+  const b=new Blob([JSON.stringify(SAMPLE,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="question-bank.sample.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);
+}
+function importJSON(inp){
+  const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{
+    const msg=$("#impmsg");
+    try{
+      const data=JSON.parse(r.result),qs=Array.isArray(data)?data:data.questions;
+      if(!Array.isArray(qs))throw new Error("No 'questions' array found.");
+      let added=0,skipped=0;const ids=new Set(allQuestions().map(q=>q.id));
+      qs.forEach((q,i)=>{
+        const sc=+q.scope,diff=["Easy","Average","Difficult"].includes(q.difficulty)?q.difficulty:null;
+        if(!q.question||!q.answer||!sc||!diff||!Array.isArray(q.distractors)||q.distractors.length<3){skipped++;return}
+        let id=q.id||("imp-"+Date.now()+"-"+i);while(ids.has(id))id+="x";ids.add(id);
+        custom.push({id,scope:sc,difficulty:diff,question:String(q.question),answer:String(q.answer),aliases:(q.aliases||[]).map(String),distractors:q.distractors.map(String),explanation:String(q.explanation||"")});added++;
+      });
+      lsSet(CUSTOM_KEY,custom);
+      renderSetup();$("#impmsg").textContent=`Imported ${added} question(s)${skipped?`, skipped ${skipped} invalid (need question, answer, scope, difficulty and 3 distractors)`:""}.`;
+      $(".card.noprint details").open=true;
+    }catch(e){msg.textContent="Import failed: "+e.message}
+  };
+  r.readAsText(f);
+}
+function clearCustom(){if(confirm("Remove all imported questions from this browser?")){custom=[];lsSet(CUSTOM_KEY,[]);renderSetup()}}
+function clearWeak(){if(confirm("Reset the saved weak-items list?")){lsSet(WEAK_KEY,[]);renderSetup()}}
+
+/* ===================== UPGRADES: modes, progress, theme, PWA ===================== */
+const SC_COL={1:"#00838F",2:"#8E24AA",3:"#C62828",4:"#1565C0",5:"#EF6C00",6:"#2E7D32",7:"#455A64",8:"#3949AB",9:"#D81B60",10:"#F9A825"},SC_ICO={1:"🖥️",2:"🧩",3:"⚙️",4:"🛠️",5:"🧱",6:"🌐",7:"🔐",8:"🗄️",9:"📊",10:"🛒"};
+const ST_KEY="isoqb_stats_v1",HI_KEY="isoqb_hist_v1";
+function startElimination(){const r=pickQuestions(allQuestions(),100,"Mixed");
+  launch(r.items,{scopes:SCOPES.map(s=>s.id),format:"MC",timer:60,difficulty:"Mixed"},r.items.length<100?"The bank has only "+r.items.length+" questions, so this test is shorter than 100.":"","Elimination")}
+function startFinals(){const p=allQuestions(),g=d=>shuffle(p.filter(q=>q.difficulty===d)).slice(0,10);
+  launch([].concat(g("Easy"),g("Average"),g("Difficult")),{scopes:SCOPES.map(s=>s.id),format:"ID",timer:0,difficulty:"Mixed"},"Finals: 10 Easy (15 s, 3 pts), 10 Average (20 s, 5 pts), 10 Difficult (30 s, 7 pts). Typed answers. No going back.","Finals")}
+function resetProgress(){if(confirm("Reset all saved progress and history on this device?")){lsSet(ST_KEY,{});lsSet(HI_KEY,[]);renderSetup()}}
+function homeHTML(){const st=lsGet(ST_KEY,{}),h=lsGet(HI_KEY,[]),V=Object.values(st),tot=V.reduce((a,b)=>a+b.t,0),cor=V.reduce((a,b)=>a+b.c,0),best=h.reduce((m,x)=>Math.max(m,Math.round(x.c/x.n*100)),0);
+  return `<div class="card"><h2>Choose your mode</h2><div class="modes">
+  <div class="mode" onclick="startElimination()"><b>🏆 Elimination</b><span>100 random multiple-choice items from all 10 scopes in 60 minutes.</span></div>
+  <div class="mode" onclick="startFinals()"><b>🎯 Finals</b><span>30 typed answers. Easy 15 s (3 pts), Average 20 s (5 pts), Difficult 30 s (7 pts).</span></div>
+  <div class="mode" onclick="document.getElementById('prac').scrollIntoView({behavior:'smooth'})"><b>📚 Practice</b><span>Pick scopes, format, timer and difficulty below.</span></div></div></div>
+  <div class="card"><h2>Your progress</h2>
+  <div class="sg pgs">
+   <div class="sc static" style="--c:#3949AB"><span class="ic">🧪</span><span class="no">ATTEMPTS</span><span class="big2">${h.length}</span></div>
+   <div class="sc static" style="--c:#2E7D32"><span class="ic">🏅</span><span class="no">BEST SCORE</span><span class="big2">${best}%</span></div>
+   <div class="sc static" style="--c:#EF6C00"><span class="ic">✅</span><span class="no">ANSWERED</span><span class="big2">${tot}</span></div>
+   <div class="sc static" style="--c:#D81B60"><span class="ic">🎯</span><span class="no">ACCURACY</span><span class="big2">${tot?Math.round(cor/tot*100):0}%</span></div></div>
+  <table style="margin-top:14px"><tr><th>Scope mastery</th><th>Accuracy</th></tr>${SCOPES.map(s=>{const b=st[s.id]||{t:0,c:0},p=b.t?Math.round(b.c/b.t*100):0;return `<tr><td>${esc(s.name)}</td><td><div class="bar"><i style="width:${p}%;background:${p>=75?"var(--ok)":p>=50?"var(--gold)":"var(--bad)"}"></i></div><span class="muted">${b.t?p+"% of "+b.t:"not started"}</span></td></tr>`}).join("")}</table>
+  <div class="links"><button onclick="resetProgress()">Reset progress</button></div></div><div id="prac"></div>`}
+const _rs=renderSetup;renderSetup=function(){_rs();$("#app").insertAdjacentHTML("afterbegin",homeHTML())};
+const _rr=renderResults;renderResults=function(){_rr();if(T.mode==="Finals"){const P=T.items.reduce((a,x)=>a+(x.ok?FP[x.difficulty]:0),0),M=T.items.reduce((a,x)=>a+FP[x.difficulty],0);
+  $("#app").insertAdjacentHTML("afterbegin",`<div class="note"><b>Finals points: ${P} / ${M}</b> (Easy 3, Average 5, Difficult 7)</div>`)}};
+const _sb=submitTest;submitTest=function(a){if(!T||T.submitted)return;_sb(a);
+  const st=lsGet(ST_KEY,{}),h=lsGet(HI_KEY,[]);let c=0;
+  T.items.forEach(it=>{const b=st[it.scope]||(st[it.scope]={t:0,c:0});b.t++;if(it.ok){b.c++;c++}});
+  h.push({d:Date.now(),m:T.mode,n:T.items.length,c});lsSet(ST_KEY,st);lsSet(HI_KEY,h.slice(-100))};
+(function(){const root=document.documentElement,k="isoqb_theme";
+  const set=v=>{root.dataset.theme=v;lsSet(k,v);b.textContent=v==="dark"?"☀ Light":"🌙 Dark"};
+  const b=document.createElement("button");b.className="noprint";b.style.cssText="padding:5px 12px;font-size:.82rem";b.onclick=()=>set(root.dataset.theme==="dark"?"light":"dark");
+  document.querySelector("header.top .in").appendChild(b);set(lsGet(k,null)||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))})();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+function goHome(){if(T&&!T.submitted&&!confirm("Leave this quiz and go back to the home page? Your answers so far will be lost."))return;renderSetup();window.scrollTo(0,0)}
+
+expandRaw();renderSetup();
+window.addEventListener("beforeunload",e=>{if(T&&!T.submitted){e.preventDefault();e.returnValue=""}});
+</script>
+</body>
+</html>
